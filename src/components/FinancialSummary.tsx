@@ -112,29 +112,29 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
               onClick={() => onFilterStatus && onFilterStatus('pendente')}
               className={`p-3.5 rounded-2xl border transition-all text-left flex items-center justify-between shadow-xs ${
                 activeStatusFilter === 'pendente'
-                  ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-400'
-                  : 'bg-emerald-50/60 border-emerald-200 hover:bg-emerald-100/60'
+                  ? 'bg-zinc-50 border-zinc-500 ring-2 ring-zinc-500'
+                  : 'bg-zinc-50/60 border-zinc-300 hover:bg-zinc-200/60'
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-zinc-200 border border-zinc-300 text-zinc-900 flex items-center justify-center shrink-0">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-black uppercase tracking-wider block">
                     Próximas (7 Dias)
                   </span>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-lg font-black text-emerald-950">
+                    <span className="text-lg font-black text-black">
                       {summary.dueSoonCount} {summary.dueSoonCount === 1 ? 'conta' : 'contas'}
                     </span>
-                    <span className="text-xs font-semibold text-emerald-700">
+                    <span className="text-xs font-semibold text-zinc-900">
                       ({formatCurrency(summary.dueSoonAmount)})
                     </span>
                   </div>
                 </div>
               </div>
-              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-200/60 px-2 py-1 rounded-lg">
+              <span className="text-[11px] font-bold text-zinc-900 bg-zinc-300/60 px-2 py-1 rounded-lg">
                 Ver
               </span>
             </button>
@@ -151,7 +151,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
               {isAllMonths ? 'Total Geral Cadastrado' : 'Despesas do Período'}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+            <div className="w-9 h-9 rounded-xl bg-zinc-50 text-zinc-900 flex items-center justify-center border border-zinc-200">
               <Wallet className="w-5 h-5" />
             </div>
           </div>
@@ -169,14 +169,14 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
         {/* Card 2: Total Já Pago */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-900">
               Total Já Pago
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center border border-emerald-200">
+            <div className="w-9 h-9 rounded-xl bg-zinc-200/70 text-black flex items-center justify-center border border-zinc-300">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
+          <div className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">
             {formatCurrency(summary.totalPaidAmount)}
           </div>
           
@@ -184,11 +184,11 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
           <div className="mt-3">
             <div className="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
               <span>Progresso de quitação</span>
-              <span className="text-emerald-700 font-bold">{percentagePaid}%</span>
+              <span className="text-zinc-900 font-bold">{percentagePaid}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-zinc-500 to-black rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, percentagePaid))}%` }}
               />
             </div>
