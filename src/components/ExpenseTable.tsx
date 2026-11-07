@@ -123,7 +123,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                           : dueBadge.variant === 'dueToday'
                           ? 'bg-amber-100 text-amber-900 animate-pulse'
                           : dueBadge.variant === 'paid'
-                          ? 'bg-zinc-200 text-black'
+                          ? 'bg-emerald-100 text-emerald-800'
                           : 'text-slate-400'
                       }`}
                     >
@@ -134,14 +134,14 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                   {/* Tipo / Parcelas */}
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     {isRecurring ? (
-                      <div className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-zinc-50 px-2 py-0.5 rounded-md border border-zinc-300">
-                        <Repeat className="w-3 h-3 text-black" />
+                      <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <Repeat className="w-3 h-3 text-emerald-600" />
                         <span>Recorrente (dia {expense.recurrence?.dueDay || expense.dueDay})</span>
                       </div>
                     ) : (
                       <>
                         <div className="inline-flex items-center gap-1 font-semibold text-xs">
-                          <span className="text-zinc-900 font-bold">{expense.paidInstallments} pagas</span>
+                          <span className="text-emerald-700 font-bold">{expense.paidInstallments} pagas</span>
                           <span className="text-slate-300">/</span>
                           <span className="text-slate-700 font-bold">{remaining} rest.</span>
                         </div>
@@ -155,7 +155,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                   {/* Situação */}
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     {isFullyPaid ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-zinc-200 text-black border border-zinc-400">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                         <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                         Paga
                       </span>
@@ -185,14 +185,14 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                           type="button"
                           onClick={() => onPay(expense)}
                           title="Registrar pagamento"
-                          className="inline-flex items-center gap-1 bg-zinc-900 hover:bg-black text-white font-bold text-xs py-1.5 px-2.5 rounded-lg transition"
+                          className="inline-flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-1.5 px-2.5 rounded-lg transition"
                         >
                           <DollarSign className="w-3.5 h-3.5" />
                           <span>Pagar</span>
                         </button>
                       ) : (
-                        <span className="text-[11px] font-semibold text-zinc-900 px-2 py-1 bg-zinc-50 rounded-lg flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3 text-black" /> Liquidada
+                        <span className="text-[11px] font-semibold text-emerald-700 px-2 py-1 bg-emerald-50 rounded-lg flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3 text-emerald-600" /> Liquidada
                         </span>
                       )}
 
@@ -200,7 +200,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                         type="button"
                         onClick={() => onView(expense)}
                         title="Ver detalhes"
-                        className="p-1.5 text-slate-500 hover:text-black hover:bg-slate-100 rounded-lg transition"
+                        className="p-1.5 text-slate-500 hover:text-emerald-800 hover:bg-slate-100 rounded-lg transition"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
