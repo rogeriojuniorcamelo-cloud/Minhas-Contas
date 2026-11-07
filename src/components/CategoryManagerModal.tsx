@@ -65,14 +65,15 @@ export const CategoryManagerModal: React.FC<CategoryManagerModalProps> = ({
 
   if (!isOpen) return null;
 
-  const resetForm = () => {
+  // Declaração como função para estar disponível antes do useEffect.
+  function resetForm() {
     setEditingId(null);
     setIsCreatingNew(false);
     setLabel('');
     setIconName('Tag');
     setSelectedColorIndex(0);
     setErrorMessage(null);
-  };
+  }
 
   const handleStartCreate = () => {
     resetForm();
