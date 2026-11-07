@@ -314,7 +314,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         {/* Cabeçalho do Modal */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-zinc-200 text-black flex items-center justify-center font-bold">
               <DollarSign className="w-5 h-5" />
             </div>
             <div>
@@ -357,7 +357,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 onClick={() => handleTypeChange('recorrente')}
                 className={`py-2 px-2 rounded-xl transition flex items-center justify-center gap-1.5 ${
                   type === 'recorrente'
-                    ? 'bg-emerald-800 text-white shadow-xs'
+                    ? 'bg-black text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -369,7 +369,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 onClick={() => handleTypeChange('parcelado')}
                 className={`py-2 px-2 rounded-xl transition flex items-center justify-center gap-1.5 ${
                   type === 'parcelado'
-                    ? 'bg-emerald-800 text-white shadow-xs'
+                    ? 'bg-black text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -381,7 +381,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 onClick={() => handleTypeChange('a_vista')}
                 className={`py-2 px-2 rounded-xl transition flex items-center justify-center gap-1.5 ${
                   type === 'a_vista'
-                    ? 'bg-emerald-800 text-white shadow-xs'
+                    ? 'bg-black text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -395,7 +395,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                <Repeat className="w-3.5 h-3.5 text-emerald-700" />
+                <Repeat className="w-3.5 h-3.5 text-zinc-900" />
                 <span>Repetir Despesa</span>
               </label>
               {type === 'parcelado' && (
@@ -412,7 +412,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   value={recurrenceFrequency}
                   onChange={(e) => handleRecurrenceChange(e.target.value as RecurrenceFrequency)}
                   disabled={type === 'parcelado'}
-                  className={`w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 cursor-pointer ${
+                  className={`w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer ${
                     type === 'parcelado' ? 'opacity-60 bg-slate-100 cursor-not-allowed' : ''
                   }`}
                 >
@@ -440,7 +440,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                         const d = parseInt(e.target.value || '1', 10);
                         setDueDay(Math.min(31, Math.max(1, d)));
                       }}
-                      className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-emerald-900 text-center focus:ring-2 focus:ring-emerald-600"
+                      className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-zinc-950 text-center focus:ring-2 focus:ring-black"
                     />
                   </div>
                   {errors.dueDay && <p className="text-rose-600 text-[11px] mt-0.5">{errors.dueDay}</p>}
@@ -462,7 +462,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                       setRecurrenceStartDate(e.target.value);
                       setDueDate(e.target.value);
                     }}
-                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-black"
                   />
                 </div>
 
@@ -475,14 +475,14 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                     value={recurrenceEndDate}
                     onChange={(e) => setRecurrenceEndDate(e.target.value)}
                     placeholder="Sem término"
-                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-600"
+                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-black"
                   />
                   {errors.recurrenceEndDate && (
                     <p className="text-rose-600 text-[11px] mt-0.5">{errors.recurrenceEndDate}</p>
                   )}
                 </div>
 
-                <div className="col-span-full text-[11px] text-emerald-800/80 font-medium">
+                <div className="col-span-full text-[11px] text-black/80 font-medium">
                   💡 Os lançamentos futuros serão gerados automaticamente para cada mês/período. Meses menores como fevereiro (28/29 dias) são ajustados sem duplicidade.
                 </div>
               </div>
@@ -499,7 +499,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Aluguel do Apartamento, Internet, Plano de Saúde..."
-              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition ${
+              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black transition ${
                 errors.name ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
               }`}
             />
@@ -510,14 +510,14 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-emerald-700" />
+                <Tag className="w-3.5 h-3.5 text-zinc-900" />
                 <span>Categoria (Opcional)</span>
               </label>
               {onOpenCategoryManager && (
                 <button
                   type="button"
                   onClick={onOpenCategoryManager}
-                  className="text-xs text-emerald-700 hover:text-emerald-900 font-bold hover:underline flex items-center gap-1"
+                  className="text-xs text-zinc-900 hover:text-zinc-950 font-bold hover:underline flex items-center gap-1"
                 >
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>Gerenciar categorias</span>
@@ -529,7 +529,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 appearance-none cursor-pointer"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black appearance-none cursor-pointer"
               >
                 <option value="">(Sem categoria)</option>
                 {categories.map((cat) => (
@@ -539,7 +539,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 ))}
               </select>
               <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500">
-                <CategoryIcon category={category} className="w-4 h-4 text-emerald-700" />
+                <CategoryIcon category={category} className="w-4 h-4 text-zinc-900" />
               </div>
             </div>
             {categories.length === 0 && (
@@ -566,7 +566,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   value={totalAmountStr}
                   onChange={(e) => handleTotalAmountChange(e.target.value)}
                   placeholder="0,00"
-                  className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm font-bold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition ${
+                  className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm font-bold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black transition ${
                     errors.totalAmount ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
                   }`}
                 />
@@ -591,7 +591,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                     value={installmentAmountStr}
                     onChange={(e) => handleInstallmentAmountChange(e.target.value)}
                     placeholder="0,00"
-                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm font-bold text-emerald-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition ${
+                    className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm font-bold text-black bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black transition ${
                       errors.installmentAmount ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
                     }`}
                   />
@@ -606,7 +606,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
           {/* Data de Vencimento */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wide flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-emerald-700" />
+              <Calendar className="w-3.5 h-3.5 text-zinc-900" />
               <span>
                 {type === 'parcelado'
                   ? 'Data de Vencimento (1ª Parcela)'
@@ -627,7 +627,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   setDueDay(d);
                 }
               }}
-              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition ${
+              className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-semibold text-slate-900 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black transition ${
                 errors.dueDate ? 'border-rose-400 bg-rose-50/50' : 'border-slate-200'
               }`}
             />
@@ -636,14 +636,14 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
           {/* Controle de Parcelas (somente se parcelado) */}
           {type === 'parcelado' && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 block">
+            <div className="p-3.5 rounded-2xl bg-zinc-50/60 border border-zinc-200 space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-zinc-950 block">
                 Controle de Parcelas
               </span>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] font-bold text-emerald-950 mb-1">
+                  <label className="block text-[11px] font-bold text-black mb-1">
                     Total Parcelas
                   </label>
                   <input
@@ -652,12 +652,12 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                     max="120"
                     value={totalInstallments}
                     onChange={(e) => handleTotalInstallmentsChange(parseInt(e.target.value || '1', 10))}
-                    className="w-full px-2.5 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold text-slate-900 text-center focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                    className="w-full px-2.5 py-2 rounded-xl border border-zinc-300 bg-white text-xs font-bold text-slate-900 text-center focus:ring-2 focus:ring-black focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-emerald-950 mb-1">
+                  <label className="block text-[11px] font-bold text-black mb-1">
                     Pagas
                   </label>
                   <input
@@ -669,7 +669,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                       const p = parseInt(e.target.value || '0', 10);
                       setPaidInstallments(Math.min(totalInstallments, Math.max(0, p)));
                     }}
-                    className="w-full px-2.5 py-2 rounded-xl border border-emerald-200 bg-white text-xs font-bold text-emerald-800 text-center focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                    className="w-full px-2.5 py-2 rounded-xl border border-zinc-300 bg-white text-xs font-bold text-black text-center focus:ring-2 focus:ring-black focus:outline-none"
                   />
                 </div>
 
@@ -737,7 +737,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: Pix automático, código de barras, contrato de locação..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 transition"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black transition"
             />
           </div>
 
@@ -754,7 +754,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-800 hover:bg-emerald-900 active:bg-emerald-950 text-white shadow-md shadow-emerald-900/20 transition active:scale-95 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-black hover:bg-zinc-950 active:bg-black text-white shadow-md shadow-zinc-950/20 transition active:scale-95 disabled:opacity-50"
             >
               {isSubmitting
                 ? 'Salvando...'
