@@ -2,20 +2,38 @@
  * Tipos e Interfaces para o Aplicativo Minhas Contas
  */
 
-export type ExpenseCategory =
-  | 'moradia'
-  | 'alimentacao'
-  | 'transporte'
-  | 'saude'
-  | 'educacao'
-  | 'lazer'
-  | 'cartao'
-  | 'servicos'
-  | 'outros';
-
-export type ExpenseType = 'a_vista' | 'parcelado';
+export type ExpenseType = 'a_vista' | 'parcelado' | 'recorrente';
 
 export type ExpenseStatus = 'paga' | 'pendente' | 'atrasada';
+
+export type RecurrenceFrequency =
+  | 'nenhuma'
+  | 'semanal'
+  | 'mensal'
+  | 'bimestral'
+  | 'trimestral'
+  | 'semestral'
+  | 'anual';
+
+export const RECURRENCE_LABELS: Record<RecurrenceFrequency, string> = {
+  nenhuma: 'Não repetir',
+  semanal: 'Semanalmente',
+  mensal: 'Mensalmente',
+  bimestral: 'A cada 2 meses',
+  trimestral: 'A cada 3 meses',
+  semestral: 'A cada 6 meses',
+  anual: 'Anualmente',
+};
+
+export interface RecurrenceDetails {
+  frequency: RecurrenceFrequency;
+  startDate: string; // YYYY-MM-DD
+  endDate?: string; // YYYY-MM-DD (opcional)
+  dueDay: number; // 1-31
+  groupId: string; // Identificador da série recorrente
+  isInterrupted?: boolean;
+  interruptedAt?: string; // YYYY-MM-DD
+}
 
 export interface InstallmentRecord {
   number: number;
@@ -28,110 +46,45 @@ export interface InstallmentRecord {
 export interface Expense {
   id: string;
   name: string;
-  category: ExpenseCategory;
+  category?: string; // ID da categoria personalizada (opcional, pode ser vazio ou indefinido)
   type: ExpenseType;
   totalAmount: number;
   installmentAmount: number;
   totalInstallments: number;
   paidInstallments: number;
-  dueDate: string; // YYYY-MM-DD (data base ou próximo vencimento)
+  dueDate: string; // YYYY-MM-DD (data de vencimento deste lançamento)
   dueDay: number; // dia do mês (1-31)
   notes?: string;
   installments: InstallmentRecord[];
   createdAt: string;
   updatedAt: string;
+  // Detalhes de recorrência
+  recurrence?: RecurrenceDetails;
 }
 
 export interface CategoryInfo {
-  id: ExpenseCategory;
+  id: string;
   label: string;
   iconName: string;
   color: string;
   bgColor: string;
   borderColor: string;
+  isDefault?: boolean;
+  createdAt?: string;
 }
 
-export const CATEGORIES: Record<ExpenseCategory, CategoryInfo> = {
-  moradia: {
-    id: 'moradia',
-    label: 'Moradia (Aluguel, Luz, Água)',
-    iconName: 'Home',
-    color: '#065f46', // emerald-800
-    bgColor: '#ecfdf5', // emerald-50
-    borderColor: '#a7f3d0',
-  },
-  alimentacao: {
-    id: 'alimentacao',
-    label: 'Alimentação e Mercado',
-    iconName: 'ShoppingCart',
-    color: '#047857',
-    bgColor: '#f0fdf4',
-    borderColor: '#bbf7d0',
-  },
-  transporte: {
-    id: 'transporte',
-    label: 'Transporte e Combustível',
-    iconName: 'Car',
-    color: '#0284c7',
-    bgColor: '#f0f9ff',
-    borderColor: '#bae6fd',
-  },
-  cartao: {
-    id: 'cartao',
-    label: 'Cartão de Crédito',
-    iconName: 'CreditCard',
-    color: '#7c3aed',
-    bgColor: '#f5f3ff',
-    borderColor: '#ddd6fe',
-  },
-  saude: {
-    id: 'saude',
-    label: 'Saúde e Farmácia',
-    iconName: 'HeartPulse',
-    color: '#dc2626',
-    bgColor: '#fef2f2',
-    borderColor: '#fecaca',
-  },
-  educacao: {
-    id: 'educacao',
-    label: 'Educação e Cursos',
-    iconName: 'GraduationCap',
-    color: '#d97706',
-    bgColor: '#fffbeb',
-    borderColor: '#fde68a',
-  },
-  servicos: {
-    id: 'servicos',
-    label: 'Serviços e Assinaturas',
-    iconName: 'Wifi',
-    color: '#059669',
-    bgColor: '#ecfdf5',
-    borderColor: '#a7f3d0',
-  },
-  lazer: {
-    id: 'lazer',
-    label: 'Lazer e Viagens',
-    iconName: 'Palmtree',
-    color: '#0891b2',
-    bgColor: '#ecfeff',
-    borderColor: '#a5f3fc',
-  },
-  outros: {
-    id: 'outros',
-    label: 'Outras Despesas',
-    iconName: 'Tag',
-    color: '#475569',
-    bgColor: '#f8fafc',
-    borderColor: '#e2e8f0',
-  },
-};
+// Lista de categorias predefinidas removida conforme Melhoria 3 (começa vazia)
+export const DEFAULT_CATEGORIES: CategoryInfo[] = [];
+
+export const CATEGORIES: Record<string, CategoryInfo> = {};
 
 export interface ExpenseFiltersState {
   search: string;
-  category: ExpenseCategory | 'todas';
+  category: string | 'todas';
   status: ExpenseStatus | 'todas' | 'vence_hoje';
   monthYear: string; // YYYY-MM ou 'todos'
   sortBy: 'dueDate_asc' | 'dueDate_desc' | 'amount_desc' | 'amount_asc' | 'name_asc';
+  typeFilter?: ExpenseType | 'todos';
 }
 
 export interface FinancialSummaryData {

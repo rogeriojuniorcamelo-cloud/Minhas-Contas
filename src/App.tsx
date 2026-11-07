@@ -8,10 +8,24 @@ import {
   getAllExpenses,
   saveExpense,
   deleteExpense as dbDeleteExpense,
-  seedSampleDataIfEmpty,
+  cleanupLegacyDemoData,
+  getAllCategories,
+  syncRecurringExpenses,
+  updateRecurringExpense,
+  interruptRecurrence,
 } from './services/db';
-import { Expense, ExpenseFiltersState, FinancialSummaryData } from './types/expense';
-import { getCurrentYearMonth, getExpenseCalculatedStatus, getTodayString } from './utils/dateUtils';
+import {
+  Expense,
+  ExpenseFiltersState,
+  FinancialSummaryData,
+  CategoryInfo,
+  DEFAULT_CATEGORIES,
+} from './types/expense';
+import {
+  getCurrentYearMonth,
+  getExpenseCalculatedStatus,
+  getTodayString,
+} from './utils/dateUtils';
 import { Header } from './components/Header';
 import { FinancialSummary } from './components/FinancialSummary';
 import { ExpenseFilters } from './components/ExpenseFilters';
@@ -23,10 +37,12 @@ import { ExpenseDetailModal } from './components/ExpenseDetailModal';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { BackupModal } from './components/BackupModal';
 import { GitHubPagesGuideModal } from './components/GitHubPagesGuideModal';
-import { Plus, Wallet, Sparkles, CheckCircle2 } from 'lucide-react';
+import { CategoryManagerModal } from './components/CategoryManagerModal';
+import { Plus, Wallet, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<CategoryInfo[]>(DEFAULT_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMonthYear, setCurrentMonthYear] = useState<string>(getCurrentYearMonth());
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -38,6 +54,7 @@ export default function App() {
     status: 'todas',
     monthYear: currentMonthYear,
     sortBy: 'dueDate_asc',
+    typeFilter: 'todos',
   });
 
   // Modais
@@ -55,6 +72,7 @@ export default function App() {
 
   const [isBackupOpen, setIsBackupOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
 
   // Notificação Toast rápida
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -64,12 +82,23 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Carrega despesas do IndexedDB na inicialização
-  const loadExpenses = async () => {
+  // Carrega categorias e despesas do IndexedDB na inicialização
+  const loadData = async () => {
     try {
       setIsLoading(true);
-      const data = await seedSampleDataIfEmpty();
-      setExpenses(data);
+      // Remove resquícios legados de dados demonstrativos e categorias de fábrica (Melhoria 3)
+      await cleanupLegacyDemoData();
+
+      // Sincroniza e gera ocorrências futuras de despesas recorrentes sem duplicidade
+      await syncRecurringExpenses();
+
+      const [loadedExpenses, loadedCategories] = await Promise.all([
+        getAllExpenses(),
+        getAllCategories(),
+      ]);
+
+      setExpenses(loadedExpenses);
+      setCategories(loadedCategories);
     } catch (err) {
       console.error('Erro ao carregar do IndexedDB:', err);
     } finally {
@@ -78,8 +107,16 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadExpenses();
+    loadData();
   }, []);
+
+  // Recarrega apenas categorias
+  const handleReloadCategories = async () => {
+    const updatedCats = await getAllCategories();
+    setCategories(updatedCats);
+    const updatedExps = await getAllExpenses();
+    setExpenses(updatedExps);
+  };
 
   // Sincroniza mês selecionado
   const handleMonthChange = (newMonthYear: string) => {
@@ -106,7 +143,7 @@ export default function App() {
     expenses.forEach((expense) => {
       // Se estamos filtrando por mês específico, verificamos a relevância desta despesa
       if (currentMonthYear !== 'todos') {
-        const hasInstallmentInMonth = expense.installments.some((inst) =>
+        const hasInstallmentInMonth = expense.installments?.some((inst) =>
           inst.dueDate.startsWith(currentMonthYear)
         );
         const matchesPrimaryDue = expense.dueDate.startsWith(currentMonthYear);
@@ -118,18 +155,35 @@ export default function App() {
       totalExpensesCount += 1;
       totalExpensesAmount += expense.totalAmount;
 
-      const remainingInstallments = Math.max(0, expense.totalInstallments - expense.paidInstallments);
-      totalRemainingInstallments += remainingInstallments;
+      const isRecurring = expense.type === 'recorrente';
+      const isPaid = isRecurring
+        ? expense.paidInstallments > 0 || expense.installments?.[0]?.isPaid === true
+        : expense.paidInstallments >= expense.totalInstallments;
 
-      const paidPart = expense.paidInstallments * expense.installmentAmount;
-      const pendingPart = remainingInstallments * expense.installmentAmount;
+      if (isRecurring) {
+        if (isPaid) {
+          totalPaidAmount += expense.totalAmount;
+        } else {
+          totalPendingAmount += expense.totalAmount;
+          totalRemainingInstallments += 1;
+        }
+      } else {
+        const remainingInstallments = Math.max(
+          0,
+          expense.totalInstallments - expense.paidInstallments
+        );
+        totalRemainingInstallments += remainingInstallments;
 
-      totalPaidAmount += paidPart;
-      totalPendingAmount += pendingPart;
+        const paidPart = expense.paidInstallments * expense.installmentAmount;
+        const pendingPart = remainingInstallments * expense.installmentAmount;
+
+        totalPaidAmount += paidPart;
+        totalPendingAmount += pendingPart;
+      }
 
       const { status, isDueToday, daysDifference } = getExpenseCalculatedStatus(expense);
 
-      if (remainingInstallments > 0) {
+      if (!isPaid) {
         if (status === 'atrasada') {
           overdueCount += 1;
           overdueAmount += expense.installmentAmount;
@@ -164,7 +218,7 @@ export default function App() {
       .filter((expense) => {
         // Filtro por Mês/Ano
         if (currentMonthYear !== 'todos') {
-          const hasInstallmentInMonth = expense.installments.some((inst) =>
+          const hasInstallmentInMonth = expense.installments?.some((inst) =>
             inst.dueDate.startsWith(currentMonthYear)
           );
           const matchesPrimaryDue = expense.dueDate.startsWith(currentMonthYear);
@@ -181,9 +235,18 @@ export default function App() {
           if (!nameMatch && !notesMatch) return false;
         }
 
+        // Filtro por Tipo de Despesa
+        if (filters.typeFilter && filters.typeFilter !== 'todos') {
+          if (expense.type !== filters.typeFilter) return false;
+        }
+
         // Filtro por Categoria
         if (filters.category !== 'todas') {
-          if (expense.category !== filters.category) return false;
+          if (filters.category === 'sem_categoria') {
+            if (expense.category) return false;
+          } else if (expense.category !== filters.category) {
+            return false;
+          }
         }
 
         // Filtro por Situação
@@ -204,9 +267,9 @@ export default function App() {
 
         switch (filters.sortBy) {
           case 'dueDate_asc':
-            return statusA.nextDueDate.localeCompare(statusB.nextDueDate);
+            return (a.dueDate || statusA.nextDueDate).localeCompare(b.dueDate || statusB.nextDueDate);
           case 'dueDate_desc':
-            return statusB.nextDueDate.localeCompare(statusA.nextDueDate);
+            return (b.dueDate || statusB.nextDueDate).localeCompare(a.dueDate || statusA.nextDueDate);
           case 'amount_desc':
             return b.totalAmount - a.totalAmount;
           case 'amount_asc':
@@ -220,10 +283,25 @@ export default function App() {
   }, [expenses, currentMonthYear, filters]);
 
   // Ações de CRUD
-  const handleSaveExpense = async (savedExpense: Expense) => {
-    await saveExpense(savedExpense);
+  const handleSaveExpense = async (
+    savedExpense: Expense,
+    options?: { recurrenceScope?: 'single' | 'future_all' }
+  ) => {
+    if (savedExpense.type === 'recorrente' && editingExpense) {
+      const scope = options?.recurrenceScope || 'future_all';
+      await updateRecurringExpense(savedExpense, scope);
+    } else {
+      await saveExpense(savedExpense);
+    }
+
+    // Se for recorrente, sincroniza horizonte de lançamentos
+    if (savedExpense.type === 'recorrente') {
+      await syncRecurringExpenses();
+    }
+
     const updated = await getAllExpenses();
     setExpenses(updated);
+
     showToast(
       editingExpense
         ? `Despesa "${savedExpense.name}" atualizada com sucesso!`
@@ -238,6 +316,17 @@ export default function App() {
     showToast(`Despesa "${expenseToDelete.name}" excluída.`);
   };
 
+  // Interromper uma série recorrente (Regra 3 & 5)
+  const handleInterruptRecurrence = async (groupId: string) => {
+    const today = getTodayString();
+    const res = await interruptRecurrence(groupId, today);
+    const updated = await getAllExpenses();
+    setExpenses(updated);
+    showToast(
+      `Recorrência interrompida. ${res.preservedCount} lançamento(s) anteriores preservados.`
+    );
+  };
+
   // Registrar Pagamento (através do modal rápido)
   const handleConfirmPayment = async (
     expense: Expense,
@@ -246,7 +335,22 @@ export default function App() {
     const updatedInstallments = [...expense.installments];
     let newPaidCount = expense.paidInstallments;
 
-    if (options.payAllRemaining) {
+    if (expense.type === 'recorrente') {
+      // Para recorrente, marca o lançamento atual como pago
+      newPaidCount = 1;
+      if (updatedInstallments.length > 0) {
+        updatedInstallments[0].isPaid = true;
+        updatedInstallments[0].paidDate = options.paymentDate;
+      } else {
+        updatedInstallments.push({
+          number: 1,
+          dueDate: expense.dueDate,
+          amount: expense.totalAmount,
+          isPaid: true,
+          paidDate: options.paymentDate,
+        });
+      }
+    } else if (options.payAllRemaining) {
       newPaidCount = expense.totalInstallments;
       updatedInstallments.forEach((inst) => {
         if (!inst.isPaid) {
@@ -275,13 +379,14 @@ export default function App() {
     const refreshed = await getAllExpenses();
     setExpenses(refreshed);
 
-    // Se a despesa estiver aberta no modal de detalhes, atualiza-a
     if (detailExpense && detailExpense.id === expense.id) {
       setDetailExpense(updatedExpense);
     }
 
     showToast(
-      options.payAllRemaining
+      expense.type === 'recorrente'
+        ? `Lançamento de "${expense.name}" marcado como pago!`
+        : options.payAllRemaining
         ? `Todas as parcelas de "${expense.name}" foram liquidadas!`
         : `Pagamento da parcela registrado com sucesso!`
     );
@@ -320,8 +425,8 @@ export default function App() {
 
     showToast(
       isPaid
-        ? `Parcela ${installmentNumber} marcada como paga!`
-        : `Pagamento da parcela ${installmentNumber} desfeito.`
+        ? `Pagamento registrado com sucesso!`
+        : `Pagamento desfeito.`
     );
   };
 
@@ -344,6 +449,7 @@ export default function App() {
           setEditingExpense(null);
           setIsFormOpen(true);
         }}
+        onOpenCategories={() => setIsCategoriesOpen(true)}
         onOpenBackup={() => setIsBackupOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}
       />
@@ -359,13 +465,15 @@ export default function App() {
           isAllMonths={currentMonthYear === 'todos'}
         />
 
-        {/* Filtros, Busca e Ordenação */}
+        {/* Filtros, Busca, Categorias e Ordenação */}
         <ExpenseFilters
           filters={filters}
           onFilterChange={(newFilters) => setFilters((prev) => ({ ...prev, ...newFilters }))}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           totalFilteredCount={filteredExpenses.length}
+          categories={categories}
+          onOpenCategoryManager={() => setIsCategoriesOpen(true)}
         />
 
         {/* Lista de Contas ou Mensagem de Vazio */}
@@ -383,7 +491,7 @@ export default function App() {
               Nenhuma conta encontrada
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6 leading-relaxed">
-              {filters.search || filters.category !== 'todas' || filters.status !== 'todas'
+              {filters.search || filters.category !== 'todas' || filters.status !== 'todas' || (filters.typeFilter && filters.typeFilter !== 'todos')
                 ? 'Nenhuma despesa corresponde aos filtros aplicados. Tente limpar os filtros para ver todas as contas.'
                 : 'Você ainda não possui despesas cadastradas neste período. Comece adicionando sua primeira conta!'}
             </p>
@@ -401,32 +509,37 @@ export default function App() {
           </div>
         ) : viewMode === 'cards' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredExpenses.map((expense) => (
-              <ExpenseCard
-                key={expense.id}
-                expense={expense}
-                onView={(exp) => {
-                  setDetailExpense(exp);
-                  setIsDetailOpen(true);
-                }}
-                onEdit={(exp) => {
-                  setEditingExpense(exp);
-                  setIsFormOpen(true);
-                }}
-                onDelete={(exp) => {
-                  setDeleteExpenseTarget(exp);
-                  setIsDeleteOpen(true);
-                }}
-                onPay={(exp) => {
-                  setPaymentExpense(exp);
-                  setIsPaymentOpen(true);
-                }}
-              />
-            ))}
+            {filteredExpenses.map((expense) => {
+              const catObj = categories.find((c) => c.id === expense.category);
+              return (
+                <ExpenseCard
+                  key={expense.id}
+                  expense={expense}
+                  categoryObj={catObj}
+                  onView={(exp) => {
+                    setDetailExpense(exp);
+                    setIsDetailOpen(true);
+                  }}
+                  onEdit={(exp) => {
+                    setEditingExpense(exp);
+                    setIsFormOpen(true);
+                  }}
+                  onDelete={(exp) => {
+                    setDeleteExpenseTarget(exp);
+                    setIsDeleteOpen(true);
+                  }}
+                  onPay={(exp) => {
+                    setPaymentExpense(exp);
+                    setIsPaymentOpen(true);
+                  }}
+                />
+              );
+            })}
           </div>
         ) : (
           <ExpenseTable
             expenses={filteredExpenses}
+            categories={categories}
             onView={(exp) => {
               setDetailExpense(exp);
               setIsDetailOpen(true);
@@ -484,6 +597,11 @@ export default function App() {
         }}
         onSave={handleSaveExpense}
         editingExpense={editingExpense}
+        categories={categories}
+        onOpenCategoryManager={() => {
+          setIsFormOpen(false);
+          setIsCategoriesOpen(true);
+        }}
       />
 
       {/* Modal de Registro de Pagamento */}
@@ -505,11 +623,13 @@ export default function App() {
           setDetailExpense(null);
         }}
         expense={detailExpense}
+        categories={categories}
         onEdit={(exp) => {
           setEditingExpense(exp);
           setIsFormOpen(true);
         }}
         onToggleInstallment={handleToggleInstallment}
+        onInterruptRecurrence={handleInterruptRecurrence}
       />
 
       {/* Modal de Confirmação de Exclusão */}
@@ -523,11 +643,20 @@ export default function App() {
         onConfirm={handleDeleteExpense}
       />
 
+      {/* Modal de Gerenciamento de Categorias (Melhoria 2) */}
+      <CategoryManagerModal
+        isOpen={isCategoriesOpen}
+        onClose={() => setIsCategoriesOpen(false)}
+        categories={categories}
+        expenses={expenses}
+        onCategoriesUpdated={handleReloadCategories}
+      />
+
       {/* Modal de Backup / Restauração JSON */}
       <BackupModal
         isOpen={isBackupOpen}
         onClose={() => setIsBackupOpen(false)}
-        onDataReload={loadExpenses}
+        onDataReload={loadData}
         totalExpensesCount={expenses.length}
       />
 

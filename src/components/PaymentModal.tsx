@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, Calendar, DollarSign, AlertCircle, ArrowRight } from 'lucide-react';
-import { Expense } from '../types/expense';
+import { X, CheckCircle, Calendar, DollarSign, Repeat } from 'lucide-react';
+import { Expense, RECURRENCE_LABELS } from '../types/expense';
 import { formatCurrency, formatDateBR } from '../utils/formatters';
 import { getExpenseCalculatedStatus, getTodayString } from '../utils/dateUtils';
 import { CategoryIcon } from './CategoryIcon';
@@ -24,13 +24,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   if (!isOpen || !expense) return null;
 
+  const isRecurring = expense.type === 'recorrente';
   const { nextDueDate, nextInstallmentNumber } = getExpenseCalculatedStatus(expense);
-  const remainingCount = Math.max(0, expense.totalInstallments - expense.paidInstallments);
-  const remainingAmount = remainingCount * expense.installmentAmount;
+  const remainingCount = isRecurring
+    ? (expense.paidInstallments > 0 ? 0 : 1)
+    : Math.max(0, expense.totalInstallments - expense.paidInstallments);
+  const remainingAmount = isRecurring
+    ? expense.totalAmount
+    : remainingCount * expense.installmentAmount;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (remainingCount <= 0) return;
+    if (remainingCount <= 0 && !isRecurring) return;
 
     setIsSubmitting(true);
     try {
@@ -58,7 +63,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-black text-slate-900">Registrar Pagamento</h2>
-              <p className="text-xs text-slate-500 font-medium">Confirme a quitação da parcela</p>
+              <p className="text-xs text-slate-500 font-medium">Confirme a quitação da despesa</p>
             </div>
           </div>
           <button
@@ -82,7 +87,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-xs">
             <div>
               <span className="text-slate-500 font-medium block">
-                {expense.type === 'parcelado' ? `Parcela ${nextInstallmentNumber} de ${expense.totalInstallments}` : 'Pagamento à Vista'}
+                {isRecurring ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
+                    <Repeat className="w-3 h-3" />
+                    <span>Lançamento Recorrente</span>
+                  </span>
+                ) : expense.type === 'parcelado' ? (
+                  `Parcela ${nextInstallmentNumber} de ${expense.totalInstallments}`
+                ) : (
+                  'Pagamento à Vista'
+                )}
               </span>
               <span className="text-base font-extrabold text-emerald-800">
                 {formatCurrency(payAllRemaining ? remainingAmount : expense.installmentAmount)}
@@ -92,7 +106,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <div>
               <span className="text-slate-500 font-medium block">Vencimento Previsto</span>
               <span className="text-sm font-bold text-slate-800">
-                {formatDateBR(nextDueDate)}
+                {formatDateBR(isRecurring ? expense.dueDate : nextDueDate)}
               </span>
             </div>
           </div>
@@ -101,8 +115,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           
-          {/* Opção de Liquidar Tudo se houver mais de 1 parcela restante */}
-          {expense.type === 'parcelado' && remainingCount > 1 && (
+          {/* Opção de Liquidar Tudo se for parcelada e tiver mais de 1 parcela restante */}
+          {!isRecurring && expense.type === 'parcelado' && remainingCount > 1 && (
             <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
               <label className="flex items-start gap-2.5 cursor-pointer">
                 <input
@@ -141,7 +155,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <div className="p-3 rounded-xl bg-slate-100 text-xs text-slate-600 flex items-center justify-between">
             <span>Status após confirmação:</span>
             <span className="font-bold text-emerald-800">
-              {payAllRemaining || remainingCount <= 1
+              {isRecurring
+                ? 'Lançamento Quitado'
+                : payAllRemaining || remainingCount <= 1
                 ? 'Totalmente Quitada'
                 : `${expense.paidInstallments + 1} de ${expense.totalInstallments} pagas`}
             </span>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Calendar,
@@ -11,8 +11,10 @@ import {
   Layers,
   FileText,
   Check,
+  Repeat,
+  Slash,
 } from 'lucide-react';
-import { Expense } from '../types/expense';
+import { Expense, CategoryInfo, RECURRENCE_LABELS } from '../types/expense';
 import { CategoryBadge, CategoryIcon } from './CategoryIcon';
 import { formatCurrency, formatDateBR } from '../utils/formatters';
 import { getExpenseCalculatedStatus, getTodayString } from '../utils/dateUtils';
@@ -21,24 +23,56 @@ interface ExpenseDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   expense: Expense | null;
+  categories?: CategoryInfo[];
   onEdit: (expense: Expense) => void;
   onToggleInstallment: (expense: Expense, installmentNumber: number, isPaid: boolean) => Promise<void>;
+  onInterruptRecurrence?: (groupId: string) => Promise<void>;
 }
 
 export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
   isOpen,
   onClose,
   expense,
+  categories,
   onEdit,
   onToggleInstallment,
+  onInterruptRecurrence,
 }) => {
+  const [showInterruptConfirm, setShowInterruptConfirm] = useState(false);
+  const [isInterrupting, setIsInterrupting] = useState(false);
+
   if (!isOpen || !expense) return null;
 
   const { status, isDueToday, daysDifference } = getExpenseCalculatedStatus(expense);
-  const remainingInstallments = Math.max(0, expense.totalInstallments - expense.paidInstallments);
-  const paidAmount = expense.paidInstallments * expense.installmentAmount;
-  const remainingAmount = remainingInstallments * expense.installmentAmount;
-  const progressPercent = Math.round((expense.paidInstallments / expense.totalInstallments) * 100);
+  const isRecurring = expense.type === 'recorrente';
+  const catObj = categories?.find((c) => c.id === expense.category);
+
+  const remainingInstallments = isRecurring
+    ? (expense.paidInstallments > 0 ? 0 : 1)
+    : Math.max(0, expense.totalInstallments - expense.paidInstallments);
+  const paidAmount = isRecurring
+    ? (expense.paidInstallments > 0 ? expense.totalAmount : 0)
+    : expense.paidInstallments * expense.installmentAmount;
+  const remainingAmount = isRecurring
+    ? (expense.paidInstallments > 0 ? 0 : expense.totalAmount)
+    : remainingInstallments * expense.installmentAmount;
+  const progressPercent = isRecurring
+    ? (expense.paidInstallments > 0 ? 100 : 0)
+    : Math.round((expense.paidInstallments / expense.totalInstallments) * 100);
+
+  const handleInterrupt = async () => {
+    if (!expense.recurrence?.groupId || !onInterruptRecurrence) return;
+    setIsInterrupting(true);
+    try {
+      await onInterruptRecurrence(expense.recurrence.groupId);
+      setShowInterruptConfirm(false);
+      onClose();
+    } catch (err) {
+      console.error('Erro ao interromper recorrência:', err);
+    } finally {
+      setIsInterrupting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto">
@@ -47,18 +81,34 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
         {/* Cabeçalho */}
         <div className="flex items-start justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-200">
-              <CategoryIcon category={expense.category} className="w-6 h-6" />
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border"
+              style={{
+                backgroundColor: catObj?.bgColor || '#ecfdf5',
+                color: catObj?.color || '#065f46',
+                borderColor: catObj?.borderColor || '#a7f3d0',
+              }}
+            >
+              <CategoryIcon iconName={catObj?.iconName} category={expense.category} className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-black text-slate-900 leading-snug">
                 {expense.name}
               </h2>
               <div className="mt-1 flex flex-wrap items-center gap-2">
-                <CategoryBadge category={expense.category} />
+                <CategoryBadge category={expense.category} categoryObj={catObj} />
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                  {expense.type === 'parcelado' ? 'Compra Parcelada' : 'À Vista'}
+                  {isRecurring
+                    ? `Recorrente (${expense.recurrence?.frequency ? RECURRENCE_LABELS[expense.recurrence.frequency] : 'Mensal'})`
+                    : expense.type === 'parcelado'
+                    ? 'Compra Parcelada'
+                    : 'À Vista'}
                 </span>
+                {isRecurring && expense.recurrence?.isInterrupted && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 border border-rose-200">
+                    Série Interrompida
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -71,11 +121,91 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
           </button>
         </div>
 
+        {/* Detalhes de Recorrência (se aplicável) */}
+        {isRecurring && expense.recurrence && (
+          <div className="mt-4 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-950 uppercase tracking-wide flex items-center gap-1.5">
+                <Repeat className="w-4 h-4 text-emerald-700" />
+                <span>Configuração de Recorrência</span>
+              </span>
+              {!expense.recurrence.isInterrupted && onInterruptRecurrence && (
+                <button
+                  type="button"
+                  onClick={() => setShowInterruptConfirm(true)}
+                  className="text-xs font-bold text-rose-700 hover:text-rose-900 underline flex items-center gap-1"
+                >
+                  <Slash className="w-3.5 h-3.5" />
+                  <span>Interromper repetição</span>
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-700 pt-1">
+              <div>
+                <span className="text-[11px] text-slate-500 block">Frequência</span>
+                <span className="font-bold text-slate-900">
+                  {RECURRENCE_LABELS[expense.recurrence.frequency]}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-slate-500 block">Vencimento</span>
+                <span className="font-bold text-slate-900">
+                  Todo dia {expense.recurrence.dueDay || expense.dueDay}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-slate-500 block">Início / Término</span>
+                <span className="font-bold text-slate-900">
+                  {formatDateBR(expense.recurrence.startDate)}{' '}
+                  {expense.recurrence.endDate ? `até ${formatDateBR(expense.recurrence.endDate)}` : '(contínuo)'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmação para Interromper Recorrência */}
+        {showInterruptConfirm && (
+          <div className="mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 space-y-3 animate-in fade-in">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-rose-950 text-xs sm:text-sm">
+                  Deseja interromper esta despesa recorrente?
+                </h4>
+                <p className="text-[11px] text-rose-800 mt-1 leading-relaxed">
+                  Os lançamentos dos meses anteriores e os pagamentos já registrados serão <strong>totalmente preservados</strong>.
+                  Os lançamentos futuros em aberto a partir de hoje não serão mais gerados.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowInterruptConfirm(false)}
+                disabled={isInterrupting}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={handleInterrupt}
+                disabled={isInterrupting}
+                className="px-4 py-1.5 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-xs transition"
+              >
+                {isInterrupting ? 'Interrompendo...' : 'Sim, Interromper'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Resumo Financeiro da Despesa */}
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Valor Total
+              {isRecurring ? 'Valor Deste Lançamento' : 'Valor Total'}
             </span>
             <span className="text-base sm:text-lg font-black text-slate-900">
               {formatCurrency(expense.totalAmount)}
@@ -84,7 +214,7 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
 
           <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-100">
             <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block">
-              Total Pago ({expense.paidInstallments})
+              Total Pago
             </span>
             <span className="text-base sm:text-lg font-black text-emerald-800">
               {formatCurrency(paidAmount)}
@@ -93,7 +223,7 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
 
           <div className="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-100">
             <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">
-              Restante ({remainingInstallments})
+              Restante a Pagar
             </span>
             <span className="text-base sm:text-lg font-black text-amber-800">
               {formatCurrency(remainingAmount)}
@@ -102,22 +232,24 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
         </div>
 
         {/* Barra de Progresso */}
-        <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-          <div className="flex justify-between items-center text-xs font-semibold text-slate-600 mb-1.5">
-            <span>
-              Progresso de Pagamento ({expense.paidInstallments} de {expense.totalInstallments} parcelas)
-            </span>
-            <span className="text-emerald-800 font-bold">{progressPercent}%</span>
+        {!isRecurring && (
+          <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+            <div className="flex justify-between items-center text-xs font-semibold text-slate-600 mb-1.5">
+              <span>
+                Progresso de Pagamento ({expense.paidInstallments} de {expense.totalInstallments} parcelas)
+              </span>
+              <span className="text-emerald-800 font-bold">{progressPercent}%</span>
+            </div>
+            <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className="h-full bg-emerald-700 rounded-full transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
-            <div
-              className="h-full bg-emerald-700 rounded-full transition-all duration-300"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Observações se existirem */}
+        {/* Observações */}
         {expense.notes && (
           <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-start gap-2.5 text-xs text-slate-600">
             <FileText className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
@@ -128,15 +260,15 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
           </div>
         )}
 
-        {/* Cronograma Detalhado de Parcelas */}
+        {/* Cronograma de Parcelas (se parcelado) ou Pagamento da Conta (se recorrente/à vista) */}
         <div className="mt-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-emerald-700" />
-              <span>Cronograma de Parcelas</span>
+              <span>{isRecurring ? 'Status do Lançamento' : 'Cronograma de Parcelas'}</span>
             </h3>
             <span className="text-xs font-semibold text-slate-400">
-              {expense.totalInstallments} {expense.totalInstallments === 1 ? 'parcela' : 'parcelas no total'}
+              {isRecurring ? 'Conta mensal' : `${expense.totalInstallments} parcelas no total`}
             </span>
           </div>
 
@@ -174,7 +306,9 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
 
                     <div>
                       <div className="font-bold">
-                        Parcela {inst.number} de {expense.totalInstallments} — {formatCurrency(inst.amount)}
+                        {isRecurring
+                          ? `Lançamento de ${formatDateBR(inst.dueDate)} — ${formatCurrency(inst.amount)}`
+                          : `Parcela ${inst.number} de ${expense.totalInstallments} — ${formatCurrency(inst.amount)}`}
                       </div>
                       <div className="text-[11px] text-slate-500 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-slate-400" />
@@ -194,7 +328,7 @@ export const ExpenseDetailModal: React.FC<ExpenseDetailModalProps> = ({
                       <button
                         type="button"
                         onClick={() => onToggleInstallment(expense, inst.number, false)}
-                        title="Desfazer/Estornar pagamento desta parcela"
+                        title="Desfazer/Estornar pagamento"
                         className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-slate-100 transition"
                       >
                         <Undo2 className="w-3 h-3" />

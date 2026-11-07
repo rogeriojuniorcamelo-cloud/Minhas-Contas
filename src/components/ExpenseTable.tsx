@@ -8,14 +8,16 @@ import {
   Clock,
   Check,
   CheckCircle,
+  Repeat,
 } from 'lucide-react';
-import { Expense } from '../types/expense';
+import { Expense, CategoryInfo, RECURRENCE_LABELS } from '../types/expense';
 import { CategoryBadge, CategoryIcon } from './CategoryIcon';
 import { formatCurrency, formatDateBR } from '../utils/formatters';
 import { getDueDateBadgeInfo, getExpenseCalculatedStatus } from '../utils/dateUtils';
 
 interface ExpenseTableProps {
   expenses: Expense[];
+  categories?: CategoryInfo[];
   onView: (expense: Expense) => void;
   onEdit: (expense: Expense) => void;
   onDelete: (expense: Expense) => void;
@@ -24,6 +26,7 @@ interface ExpenseTableProps {
 
 export const ExpenseTable: React.FC<ExpenseTableProps> = ({
   expenses,
+  categories,
   onView,
   onEdit,
   onDelete,
@@ -38,7 +41,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
               <th className="py-3 px-4">Despesa / Categoria</th>
               <th className="py-3 px-4">Valor Parcela / Total</th>
               <th className="py-3 px-4">Vencimento</th>
-              <th className="py-3 px-4 text-center">Parcelas</th>
+              <th className="py-3 px-4 text-center">Tipo / Parcelas</th>
               <th className="py-3 px-4 text-center">Situação</th>
               <th className="py-3 px-4 text-right">Ações</th>
             </tr>
@@ -47,26 +50,49 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
             {expenses.map((expense) => {
               const { status, isDueToday, daysDifference, nextDueDate, nextInstallmentNumber } =
                 getExpenseCalculatedStatus(expense);
-              const remaining = Math.max(0, expense.totalInstallments - expense.paidInstallments);
-              const isFullyPaid = remaining === 0;
+
+              const isRecurring = expense.type === 'recorrente';
+              const remaining = isRecurring
+                ? (expense.paidInstallments > 0 ? 0 : 1)
+                : Math.max(0, expense.totalInstallments - expense.paidInstallments);
+              const isFullyPaid = isRecurring
+                ? (expense.paidInstallments > 0 || expense.installments?.[0]?.isPaid === true)
+                : remaining === 0;
+
               const dueBadge = getDueDateBadgeInfo(daysDifference, isDueToday, isFullyPaid);
+              const catObj = categories?.find((c) => c.id === expense.category);
 
               return (
                 <tr key={expense.id} className="hover:bg-slate-50/80 transition-colors">
                   {/* Despesa e Categoria */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100">
-                        <CategoryIcon category={expense.category} className="w-4 h-4" />
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border"
+                        style={{
+                          backgroundColor: catObj?.bgColor || '#ecfdf5',
+                          color: catObj?.color || '#065f46',
+                          borderColor: catObj?.borderColor || '#a7f3d0',
+                        }}
+                      >
+                        <CategoryIcon iconName={catObj?.iconName} category={expense.category} className="w-4 h-4" />
                       </div>
                       <div className="min-w-0 max-w-[200px] sm:max-w-xs">
                         <span className="font-bold text-slate-900 block truncate" title={expense.name}>
                           {expense.name}
                         </span>
                         <div className="mt-0.5 flex items-center gap-1.5">
-                          <CategoryBadge category={expense.category} showIcon={false} />
+                          <CategoryBadge
+                            category={expense.category}
+                            categoryObj={catObj}
+                            showIcon={false}
+                          />
                           <span className="text-[10px] text-slate-400 font-medium">
-                            {expense.type === 'parcelado' ? 'Parcelada' : 'À Vista'}
+                            {isRecurring
+                              ? `Recorrente (${expense.recurrence?.frequency ? RECURRENCE_LABELS[expense.recurrence.frequency] : 'Mensal'})`
+                              : expense.type === 'parcelado'
+                              ? 'Parcelada'
+                              : 'À Vista'}
                           </span>
                         </div>
                       </div>
@@ -88,7 +114,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                   {/* Vencimento */}
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <div className="font-semibold text-slate-800">
-                      {isFullyPaid ? 'Concluída' : formatDateBR(nextDueDate)}
+                      {isFullyPaid ? 'Concluída' : formatDateBR(isRecurring ? expense.dueDate : nextDueDate)}
                     </div>
                     <span
                       className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${
@@ -105,16 +131,25 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                     </span>
                   </td>
 
-                  {/* Parcelas Pagas e Restantes */}
+                  {/* Tipo / Parcelas */}
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <div className="inline-flex items-center gap-1 font-semibold text-xs">
-                      <span className="text-emerald-700 font-bold">{expense.paidInstallments} pagas</span>
-                      <span className="text-slate-300">/</span>
-                      <span className="text-slate-700 font-bold">{remaining} rest.</span>
-                    </div>
-                    <div className="text-[10px] text-slate-400">
-                      de {expense.totalInstallments} {expense.totalInstallments === 1 ? 'vez' : 'parcelas'}
-                    </div>
+                    {isRecurring ? (
+                      <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <Repeat className="w-3 h-3 text-emerald-600" />
+                        <span>Recorrente (dia {expense.recurrence?.dueDay || expense.dueDay})</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="inline-flex items-center gap-1 font-semibold text-xs">
+                          <span className="text-emerald-700 font-bold">{expense.paidInstallments} pagas</span>
+                          <span className="text-slate-300">/</span>
+                          <span className="text-slate-700 font-bold">{remaining} rest.</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          de {expense.totalInstallments} {expense.totalInstallments === 1 ? 'vez' : 'parcelas'}
+                        </div>
+                      </>
+                    )}
                   </td>
 
                   {/* Situação */}
@@ -149,7 +184,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
                         <button
                           type="button"
                           onClick={() => onPay(expense)}
-                          title={`Pagar parcela ${nextInstallmentNumber}`}
+                          title="Registrar pagamento"
                           className="inline-flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-1.5 px-2.5 rounded-lg transition"
                         >
                           <DollarSign className="w-3.5 h-3.5" />

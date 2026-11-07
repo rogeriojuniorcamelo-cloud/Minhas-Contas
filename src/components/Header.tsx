@@ -5,10 +5,10 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Smartphone,
   Globe,
   WifiOff,
+  Tag,
 } from 'lucide-react';
 import { formatMonthYearBR } from '../utils/formatters';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -17,6 +17,7 @@ interface HeaderProps {
   currentMonthYear: string;
   onMonthChange: (newMonthYear: string) => void;
   onOpenNewExpense: () => void;
+  onOpenCategories: () => void;
   onOpenBackup: () => void;
   onOpenGuide: () => void;
 }
@@ -25,6 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentMonthYear,
   onMonthChange,
   onOpenNewExpense,
+  onOpenCategories,
   onOpenBackup,
   onOpenGuide,
 }) => {
@@ -95,8 +97,16 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Botão Nova Despesa visível no topo no mobile */}
+            {/* Ações Mobile Topo */}
             <div className="flex items-center gap-2 md:hidden">
+              <button
+                type="button"
+                onClick={onOpenCategories}
+                className="p-2 bg-emerald-900 text-emerald-200 rounded-xl border border-emerald-800"
+                title="Categorias"
+              >
+                <Tag className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={onOpenNewExpense}
@@ -191,6 +201,17 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>Instalar no iOS</span>
               </button>
             )}
+
+            {/* Botão Gerenciar Categorias (Melhoria 2) */}
+            <button
+              type="button"
+              onClick={onOpenCategories}
+              className="inline-flex items-center gap-1.5 bg-emerald-900 hover:bg-emerald-800 text-emerald-100 hover:text-white text-xs font-semibold px-3 py-2 rounded-xl border border-emerald-700/80 transition"
+              title="Gerenciar categorias de despesas"
+            >
+              <Tag className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Categorias</span>
+            </button>
 
             {/* Botão de Backup e Restauração */}
             <button

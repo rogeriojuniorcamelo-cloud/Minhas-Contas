@@ -190,7 +190,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   Exportar Backup em JSON
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                  Baixe um arquivo seguro com todas as suas contas cadastradas ({totalExpensesCount} no total).
+                  Baixe um arquivo seguro com todas as suas contas e categorias personalizadas ({totalExpensesCount} no total).
                 </p>
                 <button
                   type="button"

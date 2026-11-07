@@ -9,14 +9,16 @@ import {
   AlertCircle,
   Clock,
   Check,
+  Repeat,
 } from 'lucide-react';
-import { Expense } from '../types/expense';
+import { Expense, CategoryInfo, RECURRENCE_LABELS } from '../types/expense';
 import { CategoryBadge, CategoryIcon } from './CategoryIcon';
 import { formatCurrency, formatDateBR } from '../utils/formatters';
 import { getDueDateBadgeInfo, getExpenseCalculatedStatus } from '../utils/dateUtils';
 
 interface ExpenseCardProps {
   expense: Expense;
+  categoryObj?: CategoryInfo;
   onView: (expense: Expense) => void;
   onEdit: (expense: Expense) => void;
   onDelete: (expense: Expense) => void;
@@ -25,6 +27,7 @@ interface ExpenseCardProps {
 
 export const ExpenseCard: React.FC<ExpenseCardProps> = ({
   expense,
+  categoryObj,
   onView,
   onEdit,
   onDelete,
@@ -33,8 +36,13 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
   const { status, isDueToday, daysDifference, nextDueDate, nextInstallmentNumber } =
     getExpenseCalculatedStatus(expense);
 
-  const remainingInstallments = Math.max(0, expense.totalInstallments - expense.paidInstallments);
-  const isFullyPaid = remainingInstallments === 0;
+  const isRecurring = expense.type === 'recorrente';
+  const remainingInstallments = isRecurring
+    ? (expense.paidInstallments > 0 ? 0 : 1)
+    : Math.max(0, expense.totalInstallments - expense.paidInstallments);
+  const isFullyPaid = isRecurring
+    ? (expense.paidInstallments > 0 || expense.installments?.[0]?.isPaid === true)
+    : remainingInstallments === 0;
 
   const dueBadge = getDueDateBadgeInfo(daysDifference, isDueToday, isFullyPaid);
 
@@ -72,6 +80,32 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
     );
   };
 
+  const getTypeNameBadge = () => {
+    if (expense.type === 'recorrente') {
+      const freqLabel = expense.recurrence?.frequency
+        ? RECURRENCE_LABELS[expense.recurrence.frequency]
+        : 'Recorrente';
+      return (
+        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
+          <Repeat className="w-3 h-3" />
+          <span>{freqLabel}</span>
+        </span>
+      );
+    }
+    if (expense.type === 'parcelado') {
+      return (
+        <span className="text-[11px] font-semibold text-purple-800 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+          Parcelada ({expense.paidInstallments}/{expense.totalInstallments})
+        </span>
+      );
+    }
+    return (
+      <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+        À Vista
+      </span>
+    );
+  };
+
   return (
     <div
       className={`bg-white rounded-2xl border transition-all hover:shadow-md flex flex-col justify-between overflow-hidden ${
@@ -88,18 +122,31 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="flex items-start gap-2.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 border border-emerald-100 mt-0.5">
-              <CategoryIcon category={expense.category} className="w-5 h-5" />
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border mt-0.5"
+              style={{
+                backgroundColor: categoryObj?.bgColor || '#ecfdf5',
+                color: categoryObj?.color || '#065f46',
+                borderColor: categoryObj?.borderColor || '#a7f3d0',
+              }}
+            >
+              <CategoryIcon
+                iconName={categoryObj?.iconName}
+                category={expense.category}
+                className="w-5 h-5"
+              />
             </div>
             <div className="min-w-0">
               <h3 className="font-bold text-slate-900 text-base leading-snug truncate" title={expense.name}>
                 {expense.name}
               </h3>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <CategoryBadge category={expense.category} showIcon={false} />
-                <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                  {expense.type === 'parcelado' ? 'Parcelada' : 'À Vista'}
-                </span>
+                <CategoryBadge
+                  category={expense.category}
+                  categoryObj={categoryObj}
+                  showIcon={false}
+                />
+                {getTypeNameBadge()}
               </div>
             </div>
           </div>
@@ -110,7 +157,9 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
         {/* Informações de Valores e Parcelas */}
         <div className="mt-4 p-3 rounded-xl bg-slate-50/80 border border-slate-100 grid grid-cols-2 gap-2 text-xs">
           <div>
-            <span className="text-slate-400 font-medium block">Valor Total</span>
+            <span className="text-slate-400 font-medium block">
+              {isRecurring ? 'Valor do Período' : 'Valor Total'}
+            </span>
             <span className="text-sm sm:text-base font-extrabold text-slate-900">
               {formatCurrency(expense.totalAmount)}
             </span>
@@ -126,14 +175,26 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
           </div>
 
           <div className="col-span-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-slate-600">
-            <span>
-              Parcelas:{' '}
-              <strong className="text-emerald-700">{expense.paidInstallments}</strong> pagas /{' '}
-              <strong className="text-slate-800">{remainingInstallments}</strong> restantes
-            </span>
-            <span className="font-mono text-[11px] text-slate-400">
-              ({expense.paidInstallments}/{expense.totalInstallments})
-            </span>
+            {isRecurring ? (
+              <span className="flex items-center gap-1 text-[11px] text-slate-600 font-medium">
+                <Repeat className="w-3 h-3 text-emerald-700" />
+                <span>
+                  Recorrência {expense.recurrence?.frequency ? RECURRENCE_LABELS[expense.recurrence.frequency].toLowerCase() : ''}
+                  {expense.recurrence?.dueDay ? ` (dia ${expense.recurrence.dueDay})` : ''}
+                </span>
+              </span>
+            ) : (
+              <>
+                <span>
+                  Parcelas:{' '}
+                  <strong className="text-emerald-700">{expense.paidInstallments}</strong> pagas /{' '}
+                  <strong className="text-slate-800">{remainingInstallments}</strong> restantes
+                </span>
+                <span className="font-mono text-[11px] text-slate-400">
+                  ({expense.paidInstallments}/{expense.totalInstallments})
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -142,7 +203,9 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
           <div className="flex items-center gap-1.5 text-slate-600 font-medium">
             <Calendar className="w-3.5 h-3.5 text-emerald-700" />
             <span>
-              {isFullyPaid ? 'Concluída' : `Próx. Vencimento: ${formatDateBR(nextDueDate)}`}
+              {isFullyPaid
+                ? 'Concluída / Paga'
+                : `Vencimento: ${formatDateBR(isRecurring ? expense.dueDate : nextDueDate)}`}
             </span>
           </div>
 
@@ -161,7 +224,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
           </span>
         </div>
 
-        {/* Observações Opcionais */}
+        {/* Observações */}
         {expense.notes && (
           <p className="mt-2 text-xs text-slate-500 italic line-clamp-1" title={expense.notes}>
             &ldquo;{expense.notes}&rdquo;
@@ -189,7 +252,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
         ) : (
           <div className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-800 font-semibold text-xs py-2 px-3 rounded-xl border border-emerald-200/60">
             <CheckCircle className="w-4 h-4 text-emerald-600" />
-            <span>Totalmente Paga</span>
+            <span>{isRecurring ? 'Conta Paga' : 'Totalmente Paga'}</span>
           </div>
         )}
 
@@ -198,7 +261,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
           <button
             type="button"
             onClick={() => onView(expense)}
-            title="Visualizar detalhes e parcelas"
+            title="Visualizar detalhes"
             className="p-2 text-slate-600 hover:text-emerald-800 hover:bg-slate-200/70 rounded-xl transition"
           >
             <Eye className="w-4 h-4" />

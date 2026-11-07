@@ -1,6 +1,6 @@
 import React from 'react';
-import { Search, Filter, LayoutGrid, List, ArrowDownUp, X } from 'lucide-react';
-import { ExpenseCategory, CATEGORIES, ExpenseFiltersState, ExpenseStatus } from '../types/expense';
+import { Search, Filter, LayoutGrid, List, ArrowDownUp, X, Tag } from 'lucide-react';
+import { CategoryInfo, ExpenseFiltersState, ExpenseType } from '../types/expense';
 
 interface ExpenseFiltersProps {
   filters: ExpenseFiltersState;
@@ -8,6 +8,8 @@ interface ExpenseFiltersProps {
   viewMode: 'cards' | 'table';
   onViewModeChange: (mode: 'cards' | 'table') => void;
   totalFilteredCount: number;
+  categories: CategoryInfo[];
+  onOpenCategoryManager?: () => void;
 }
 
 export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
@@ -16,17 +18,21 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
   viewMode,
   onViewModeChange,
   totalFilteredCount,
+  categories,
+  onOpenCategoryManager,
 }) => {
   const hasActiveFilters =
     filters.search !== '' ||
     filters.category !== 'todas' ||
-    filters.status !== 'todas';
+    filters.status !== 'todas' ||
+    (filters.typeFilter && filters.typeFilter !== 'todos');
 
   const clearFilters = () => {
     onFilterChange({
       search: '',
       category: 'todas',
       status: 'todas',
+      typeFilter: 'todos',
     });
   };
 
@@ -103,7 +109,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
         </div>
       </div>
 
-      {/* Linha Inferior: Filtros de Categoria e Situação */}
+      {/* Linha Inferior: Filtros de Categoria, Tipo e Situação */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
         
         {/* Filtro de Situação (Status) */}
@@ -158,20 +164,48 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
           </button>
         </div>
 
-        {/* Filtro de Categoria (Select elegante) */}
-        <div className="flex items-center gap-2">
+        {/* Filtro de Tipo e Categoria */}
+        <div className="flex items-center gap-2 flex-wrap">
+          
+          {/* Filtro de Tipo de Conta */}
           <select
-            value={filters.category}
-            onChange={(e) => onFilterChange({ category: e.target.value as any })}
-            className="text-xs font-semibold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            value={filters.typeFilter || 'todos'}
+            onChange={(e) => onFilterChange({ typeFilter: e.target.value as any })}
+            className="text-xs font-semibold py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
           >
-            <option value="todas">Todas as Categorias</option>
-            {Object.values(CATEGORIES).map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.label}
-              </option>
-            ))}
+            <option value="todos">Todos os Tipos</option>
+            <option value="recorrente">Recorrentes</option>
+            <option value="parcelado">Parceladas</option>
+            <option value="a_vista">À Vista</option>
           </select>
+
+          {/* Filtro de Categoria Dinâmica */}
+          <div className="flex items-center gap-1">
+            <select
+              value={filters.category}
+              onChange={(e) => onFilterChange({ category: e.target.value })}
+              className="text-xs font-semibold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+            >
+              <option value="todas">Todas as Categorias</option>
+              <option value="sem_categoria">Sem categoria</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+
+            {onOpenCategoryManager && (
+              <button
+                type="button"
+                onClick={onOpenCategoryManager}
+                title="Gerenciar Categorias"
+                className="p-1.5 text-slate-500 hover:text-emerald-800 hover:bg-slate-100 rounded-lg transition"
+              >
+                <Tag className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
           {hasActiveFilters && (
             <button
