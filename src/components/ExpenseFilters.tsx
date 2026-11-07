@@ -74,7 +74,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
             <select
               value={filters.category}
               onChange={(e) => onFilterChange({ category: e.target.value })}
-              className="text-xs font-semibold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-black"
+              className="text-xs font-semibold py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
             >
               <option value="todas">Todas as Categorias</option>
               <option value="sem_categoria">Sem categoria</option>
