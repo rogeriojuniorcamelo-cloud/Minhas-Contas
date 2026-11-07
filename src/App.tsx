@@ -467,8 +467,6 @@ export default function App() {
         {/* Resumo Financeiro / Painel de Indicadores */}
         <FinancialSummary
           summary={summaryData}
-          onFilterStatus={(status) => setFilters((prev) => ({ ...prev, status }))}
-          activeStatusFilter={filters.status}
           isAllMonths={currentMonthYear === 'todos'}
         />
 
