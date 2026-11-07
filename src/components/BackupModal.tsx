@@ -142,7 +142,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
         {/* Cabeçalho */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-zinc-200 text-black flex items-center justify-center font-bold">
               <Database className="w-5 h-5" />
             </div>
             <div>
@@ -164,12 +164,12 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           <div
             className={`mt-4 p-3.5 rounded-2xl flex items-start gap-2.5 text-xs font-semibold ${
               statusMessage.type === 'success'
-                ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                ? 'bg-zinc-50 text-zinc-950 border border-zinc-300'
                 : 'bg-rose-50 text-rose-900 border border-rose-200'
             }`}
           >
             {statusMessage.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-black shrink-0 mt-0.5" />
             ) : (
               <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             )}
@@ -182,7 +182,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           {/* Seção 1: Exportar Backup */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-emerald-600 text-white shrink-0 mt-0.5">
+              <div className="p-2 rounded-xl bg-black text-white shrink-0 mt-0.5">
                 <Download className="w-4 h-4" />
               </div>
               <div>
@@ -196,7 +196,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   type="button"
                   onClick={handleExport}
                   disabled={isLoading}
-                  className="mt-3 inline-flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs py-2 px-3.5 rounded-xl transition shadow-xs disabled:opacity-50"
+                  className="mt-3 inline-flex items-center gap-1.5 bg-black hover:bg-zinc-950 text-white font-bold text-xs py-2 px-3.5 rounded-xl transition shadow-xs disabled:opacity-50"
                 >
                   <FileJson className="w-4 h-4" />
                   <span>Baixar Arquivo JSON</span>
@@ -228,7 +228,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                       value="replace"
                       checked={importMode === 'replace'}
                       onChange={() => setImportMode('replace')}
-                      className="text-emerald-700 focus:ring-emerald-600"
+                      className="text-zinc-900 focus:ring-black"
                     />
                     <span>Substituir tudo</span>
                   </label>
@@ -239,7 +239,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                       value="merge"
                       checked={importMode === 'merge'}
                       onChange={() => setImportMode('merge')}
-                      className="text-emerald-700 focus:ring-emerald-600"
+                      className="text-zinc-900 focus:ring-black"
                     />
                     <span>Mesclar contas</span>
                   </label>
@@ -267,8 +267,8 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           </div>
 
           {/* Seção 3: Informações de Privacidade do IndexedDB */}
-          <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-start gap-2.5 text-xs text-emerald-950 font-medium">
-            <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-2xl bg-zinc-50/60 border border-zinc-200 flex items-start gap-2.5 text-xs text-black font-medium">
+            <ShieldCheck className="w-5 h-5 text-zinc-900 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               <strong>Privacidade Total:</strong> Os seus dados financeiros nunca saem do seu navegador. Não há servidores remotos coletando suas informações.
             </p>
