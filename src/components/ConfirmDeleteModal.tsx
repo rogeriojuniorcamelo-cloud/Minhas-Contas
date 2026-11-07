@@ -64,7 +64,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
               <>
                 Tem certeza de que deseja excluir permanentemente a despesa{' '}
                 <strong className="text-slate-900 font-extrabold">{expense.name}</strong> no valor de{' '}
-                <strong className="text-emerald-800 font-extrabold">{formatCurrency(expense.totalAmount)}</strong>?
+                <strong className="text-black font-extrabold">{formatCurrency(expense.totalAmount)}</strong>?
               </>
             )}
           </p>
