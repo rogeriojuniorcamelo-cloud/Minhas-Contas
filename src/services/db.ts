@@ -18,7 +18,7 @@ import {
 } from '../utils/dateUtils';
 
 const DB_NAME = 'MinhasContasDB';
-const DB_VERSION = 2; // Suporte a despesas e categorias dinâmicas
+const DB_VERSION = 3; // Migração segura para garantir a existência das lojas de categorias e despesas
 const STORE_EXPENSES = 'despesas';
 const STORE_CATEGORIES = 'categorias';
 
@@ -72,10 +72,16 @@ export function openDatabase(): Promise<IDBDatabase> {
  */
 export async function cleanupLegacyDemoData(): Promise<void> {
   const db = await openDatabase();
+  // Bancos antigos podem não possuir a loja de categorias. Nunca deixe essa limpeza
+  // impedir a abertura do aplicativo ou a leitura das despesas existentes.
+  const stores = [STORE_EXPENSES];
+  if (db.objectStoreNames.contains(STORE_CATEGORIES)) stores.push(STORE_CATEGORIES);
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_EXPENSES, STORE_CATEGORIES], 'readwrite');
+    const transaction = db.transaction(stores, 'readwrite');
     const expStore = transaction.objectStore(STORE_EXPENSES);
-    const catStore = transaction.objectStore(STORE_CATEGORIES);
+    const catStore = db.objectStoreNames.contains(STORE_CATEGORIES)
+      ? transaction.objectStore(STORE_CATEGORIES)
+      : null;
 
     // 1. Remove apenas despesas demonstrativas conhecidas
     const expReq = expStore.getAll();
@@ -98,9 +104,10 @@ export async function cleanupLegacyDemoData(): Promise<void> {
     };
 
     // 2. Remove categorias predefinidas antigas para deixar a lista vazia por padrão
-    const catReq = catStore.getAll();
-    catReq.onsuccess = () => {
-      const allCats = catReq.result as CategoryInfo[];
+    if (catStore) {
+      const catReq = catStore.getAll();
+      catReq.onsuccess = () => {
+        const allCats = catReq.result as CategoryInfo[];
       const legacyCategoryIds = [
         'moradia',
         'alimentacao',
@@ -113,15 +120,16 @@ export async function cleanupLegacyDemoData(): Promise<void> {
         'outros',
       ];
 
-      if (allCats) {
-        for (const cat of allCats) {
-          // Remove as categorias que vieram pré-instaladas de fábrica
-          if (cat.isDefault === true || legacyCategoryIds.includes(cat.id)) {
-            catStore.delete(cat.id);
+        if (allCats) {
+          for (const cat of allCats) {
+            // Remove as categorias que vieram pré-instaladas de fábrica
+            if (cat.isDefault === true || legacyCategoryIds.includes(cat.id)) {
+              catStore.delete(cat.id);
+            }
           }
         }
-      }
-    };
+      };
+    }
 
     transaction.oncomplete = () => {
       resolve();
@@ -142,6 +150,7 @@ export async function cleanupLegacyDemoData(): Promise<void> {
  */
 export async function getAllCategories(): Promise<CategoryInfo[]> {
   const db = await openDatabase();
+  if (!db.objectStoreNames.contains(STORE_CATEGORIES)) return [];
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_CATEGORIES, 'readonly');
     const store = transaction.objectStore(STORE_CATEGORIES);
