@@ -36,7 +36,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
               {isAllMonths ? 'Total Geral Cadastrado' : 'Despesas do Período'}
             </span>
-            <div className="w-9 h-9 rounded-xl bg-zinc-50 text-zinc-900 flex items-center justify-center border border-zinc-200">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
               <Wallet className="w-5 h-5" />
             </div>
           </div>
@@ -57,11 +57,11 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-900">
               Total Já Pago
             </span>
-            <div className="w-9 h-9 rounded-xl bg-zinc-200/70 text-black flex items-center justify-center border border-zinc-300">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center border border-emerald-200">
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight">
+          <div className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
             {formatCurrency(summary.totalPaidAmount)}
           </div>
           
@@ -69,11 +69,11 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
           <div className="mt-3">
             <div className="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
               <span>Progresso de quitação</span>
-              <span className="text-zinc-900 font-bold">{percentagePaid}%</span>
+              <span className="text-emerald-700 font-bold">{percentagePaid}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-zinc-500 to-black rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, percentagePaid))}%` }}
               />
             </div>
