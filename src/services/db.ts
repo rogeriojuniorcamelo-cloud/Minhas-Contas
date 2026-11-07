@@ -270,17 +270,45 @@ export async function saveExpense(expense: Expense): Promise<void> {
 }
 
 /**
- * Remove uma despesa por ID
+ * Exclui definitivamente uma despesa.
+ * Quando ela pertence a uma série recorrente, remove todas as ocorrências
+ * da mesma série para que a sincronização não volte a gerá-las.
  */
 export async function deleteExpense(id: string): Promise<void> {
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_EXPENSES, 'readwrite');
     const store = transaction.objectStore(STORE_EXPENSES);
-    const request = store.delete(id);
+    const request = store.getAll();
 
-    request.onsuccess = () => resolve();
+    request.onsuccess = () => {
+      const allExpenses = request.result as Expense[];
+      const target = allExpenses.find((expense) => expense.id === id);
+
+      if (!target) return;
+
+      const groupId =
+        target.type === 'recorrente' ? target.recurrence?.groupId : undefined;
+
+      if (groupId) {
+        // Apaga todos os lançamentos passados, atuais e futuros desta recorrência.
+        for (const expense of allExpenses) {
+          if (
+            expense.type === 'recorrente' &&
+            expense.recurrence?.groupId === groupId
+          ) {
+            store.delete(expense.id);
+          }
+        }
+      } else {
+        store.delete(id);
+      }
+    };
+
     request.onerror = () => reject(request.error);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error);
   });
 }
 
