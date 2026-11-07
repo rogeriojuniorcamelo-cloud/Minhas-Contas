@@ -6,16 +6,17 @@ import './index.css';
 
 class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean; message: string }
+  { hasError: boolean; message: string; details: string }
 > {
-  state = { hasError: false, message: '' };
+  state = { hasError: false, message: '', details: '' };
 
   static getDerivedStateFromError(error: Error) {
-    return { hasError: true, message: error?.message || 'Erro inesperado ao iniciar.' };
+    return { hasError: true, message: error?.message || 'Erro inesperado ao iniciar.', details: error?.stack || '' };
   }
 
-  componentDidCatch(error: Error) {
-    console.error('Erro fatal na interface Minhas Contas:', error);
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('Erro fatal na interface Minhas Contas:', error, info.componentStack);
+    this.setState({ details: [error?.stack || '', info.componentStack || ''].filter(Boolean).join('\n\n') });
   }
 
   render() {
@@ -25,6 +26,7 @@ class AppErrorBoundary extends React.Component<
           <h1>Não foi possível abrir o painel</h1>
           <p>O aplicativo encontrou um erro ao iniciar. Seus dados locais não foram apagados.</p>
           <pre style={{ whiteSpace: 'pre-wrap', color: '#991b1b' }}>{this.state.message}</pre>
+          {this.state.details && <details style={{ marginTop: 12 }}><summary style={{ cursor: 'pointer' }}>Detalhes técnicos para diagnóstico</summary><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: 11, marginTop: 8 }}>{this.state.details}</pre></details>}
           <button
             onClick={() => window.location.reload()}
             style={{ padding: '12px 18px', borderRadius: 8, background: '#065f46', color: '#fff' }}
