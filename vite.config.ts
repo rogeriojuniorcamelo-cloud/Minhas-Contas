@@ -7,6 +7,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig(() => {
   return {
     base: './',
+    // Diagnóstico temporário: mantém nomes e mapas de origem para localizar erros em produção.
+    build: { minify: false, sourcemap: true },
     plugins: [
       react(),
       tailwindcss(),
