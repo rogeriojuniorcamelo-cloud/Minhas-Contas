@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   CalendarClock,
   Layers,
-  ArrowUpRight,
   TrendingDown,
 } from 'lucide-react';
 import { FinancialSummaryData } from '../types/expense';
@@ -14,15 +13,11 @@ import { formatCurrency } from '../utils/formatters';
 
 interface FinancialSummaryProps {
   summary: FinancialSummaryData;
-  onFilterStatus?: (status: 'todas' | 'pendente' | 'paga' | 'atrasada' | 'vence_hoje') => void;
-  activeStatusFilter?: string;
   isAllMonths: boolean;
 }
 
 export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
   summary,
-  onFilterStatus,
-  activeStatusFilter,
   isAllMonths,
 }) => {
   const percentagePaid =
@@ -143,7 +138,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
       )}
 
       {/* Cartões Principais do Painel Financeiro */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         
         {/* Card 1: Total de Despesas */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
@@ -214,24 +209,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
           </div>
         </div>
 
-        {/* Card 4: Parcelas Restantes */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Parcelas Restantes
-            </span>
-            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
-              <ArrowUpRight className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
-            {summary.totalRemainingInstallments}
-            <span className="text-sm font-semibold text-slate-400 ml-1">parcelas</span>
-          </div>
-          <div className="mt-2 text-xs text-slate-500 font-medium">
-            Previsão para quitação gradual
-          </div>
-        </div>
+
 
       </div>
     </section>
