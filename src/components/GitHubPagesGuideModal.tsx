@@ -19,7 +19,7 @@ export const GitHubPagesGuideModal: React.FC<GitHubPagesGuideModalProps> = ({
         {/* Cabeçalho */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-200 text-black flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
               <Globe className="w-5 h-5" />
             </div>
             <div>
@@ -39,9 +39,9 @@ export const GitHubPagesGuideModal: React.FC<GitHubPagesGuideModalProps> = ({
         {/* Conteúdo */}
         <div className="mt-4 space-y-4 text-xs text-slate-700 leading-relaxed max-h-[70vh] overflow-y-auto pr-1">
           
-          <div className="p-3.5 rounded-2xl bg-zinc-50/70 border border-zinc-300 text-black">
-            <div className="flex items-center gap-2 font-bold mb-1 text-zinc-950">
-              <Zap className="w-4 h-4 text-black" />
+          <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-emerald-950">
+            <div className="flex items-center gap-2 font-bold mb-1 text-emerald-900">
+              <Zap className="w-4 h-4 text-emerald-600" />
               <span>Pronto para Produção Estática</span>
             </div>
             O aplicativo <strong>MINHAS CONTAS</strong> foi desenvolvido com Vite, React e Tailwind CSS puro, utilizando <strong>IndexedDB local</strong>. Ele não requer nenhum servidor Node.js em produção e já está configurado com caminhos relativos (<code>base: './'</code>) para funcionar em qualquer subpasta do GitHub Pages.
@@ -50,13 +50,13 @@ export const GitHubPagesGuideModal: React.FC<GitHubPagesGuideModalProps> = ({
           {/* Passo a Passo GitHub Pages */}
           <div className="space-y-3">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <GitBranch className="w-4 h-4 text-zinc-900" />
+              <GitBranch className="w-4 h-4 text-emerald-700" />
               <span>Passo a Passo para GitHub Pages:</span>
             </h3>
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
               <div className="font-bold text-slate-800">1. Gerar o pacote estático de build:</div>
-              <div className="bg-slate-900 text-zinc-500 p-2.5 rounded-xl font-mono text-[11px] overflow-x-auto">
+              <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-xl font-mono text-[11px] overflow-x-auto">
                 npm run build
               </div>
               <p className="text-slate-500 text-[11px]">
@@ -66,7 +66,7 @@ export const GitHubPagesGuideModal: React.FC<GitHubPagesGuideModalProps> = ({
 
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
               <div className="font-bold text-slate-800">2. Criar repositório e enviar para o GitHub:</div>
-              <div className="bg-slate-900 text-zinc-500 p-2.5 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre">
+              <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-xl font-mono text-[11px] overflow-x-auto whitespace-pre">
 {`git init
 git add .
 git commit -m "Publicação Minhas Contas"
@@ -100,7 +100,7 @@ git push -u origin main`}
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 bg-black hover:bg-zinc-950 text-white rounded-xl text-xs font-bold transition"
+            className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold transition"
           >
             Entendido
           </button>
