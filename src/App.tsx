@@ -219,6 +219,33 @@ export default function App() {
     };
   }, [expenses, currentMonthYear]);
 
+  // Soma dos valores originais das despesas da categoria selecionada
+  const selectedCategorySummary = useMemo(() => {
+    if (filters.category === 'todas') return { count: 0, total: 0 };
+
+    const categoryExpenses = expenses.filter((expense) => {
+      if (filters.category === 'sem_categoria') {
+        if (expense.category) return false;
+      } else if (expense.category !== filters.category) {
+        return false;
+      }
+
+      if (currentMonthYear !== 'todos') {
+        const hasInstallmentInMonth = expense.installments?.some((inst) =>
+          inst.dueDate.startsWith(currentMonthYear)
+        );
+        const matchesPrimaryDue = expense.dueDate.startsWith(currentMonthYear);
+        if (!hasInstallmentInMonth && !matchesPrimaryDue) return false;
+      }
+      return true;
+    });
+
+    return {
+      count: categoryExpenses.length,
+      total: categoryExpenses.reduce((sum, expense) => sum + expense.totalAmount, 0),
+    };
+  }, [expenses, filters.category, currentMonthYear]);
+
   // Filtragem e Ordenação da Lista de Despesas
   const filteredExpenses = useMemo(() => {
     return expenses
@@ -478,6 +505,8 @@ export default function App() {
           onViewModeChange={setViewMode}
           totalFilteredCount={filteredExpenses.length}
           categories={categories}
+          selectedCategoryCount={selectedCategorySummary.count}
+          selectedCategoryTotal={selectedCategorySummary.total}
           onOpenCategoryManager={() => setIsCategoriesOpen(true)}
         />
 

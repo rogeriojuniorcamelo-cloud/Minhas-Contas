@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, LayoutGrid, List, X, Tag } from 'lucide-react';
 import { CategoryInfo, ExpenseFiltersState } from '../types/expense';
+import { formatCurrency } from '../utils/formatters';
 
 interface ExpenseFiltersProps {
   filters: ExpenseFiltersState;
@@ -9,6 +10,8 @@ interface ExpenseFiltersProps {
   onViewModeChange: (mode: 'cards' | 'table') => void;
   totalFilteredCount: number;
   categories: CategoryInfo[];
+  selectedCategoryCount: number;
+  selectedCategoryTotal: number;
   onOpenCategoryManager?: () => void;
 }
 
@@ -19,6 +22,8 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
   onViewModeChange,
   totalFilteredCount,
   categories,
+  selectedCategoryCount,
+  selectedCategoryTotal,
   onOpenCategoryManager,
 }) => {
   const hasActiveFilters = filters.search !== '' || filters.category !== 'todas';
@@ -107,6 +112,23 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
           </span>
         </div>
       </div>
+      {filters.category !== 'todas' && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-semibold text-emerald-900">
+              Total da categoria: {filters.category === 'sem_categoria'
+                ? 'Sem categoria'
+                : categories.find((cat) => cat.id === filters.category)?.label || 'Categoria selecionada'}
+            </p>
+            <p className="text-[11px] text-emerald-700 mt-0.5">
+              {selectedCategoryCount} {selectedCategoryCount === 1 ? 'despesa cadastrada' : 'despesas cadastradas'}
+            </p>
+          </div>
+          <p className="text-lg font-extrabold text-emerald-900 tabular-nums">
+            {formatCurrency(selectedCategoryTotal)}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
