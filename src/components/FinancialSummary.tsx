@@ -54,7 +54,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = ({
         {/* Card 2: Total Já Pago */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
               Total Já Pago
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center border border-emerald-200">
