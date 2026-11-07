@@ -20,6 +20,8 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
 
   if (!isOpen || !expense) return null;
 
+  const isRecurringSeries = expense.type === 'recorrente' && Boolean(expense.recurrence?.groupId);
+
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
@@ -52,9 +54,19 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         <div className="mt-2">
           <h3 className="text-base font-bold text-slate-900">Excluir Despesa</h3>
           <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-            Tem certeza de que deseja excluir permanentemente a despesa{' '}
-            <strong className="text-slate-900 font-extrabold">{expense.name}</strong> no valor de{' '}
-            <strong className="text-emerald-800 font-extrabold">{formatCurrency(expense.totalAmount)}</strong>?
+            {isRecurringSeries ? (
+              <>
+                Tem certeza de que deseja excluir definitivamente toda a recorrência{' '}
+                <strong className="text-slate-900 font-extrabold">{expense.name}</strong>?
+                Todos os lançamentos anteriores, atuais e futuros desta série serão apagados.
+              </>
+            ) : (
+              <>
+                Tem certeza de que deseja excluir permanentemente a despesa{' '}
+                <strong className="text-slate-900 font-extrabold">{expense.name}</strong> no valor de{' '}
+                <strong className="text-emerald-800 font-extrabold">{formatCurrency(expense.totalAmount)}</strong>?
+              </>
+            )}
           </p>
           <p className="mt-1.5 text-[11px] text-rose-600 font-medium">
             Esta ação não poderá ser desfeita.
