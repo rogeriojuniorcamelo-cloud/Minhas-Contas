@@ -45,6 +45,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentMonthYear, setCurrentMonthYear] = useState<string>(getCurrentYearMonth());
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [selectedDueDay, setSelectedDueDay] = useState<number | null>(null);
 
   // Filtros
   const [filters, setFilters] = useState<ExpenseFiltersState>({
@@ -246,6 +247,38 @@ export default function App() {
     };
   }, [expenses, filters.category, currentMonthYear]);
 
+  // Dias de vencimento disponíveis no mês selecionado
+  const availableDueDays = useMemo(() => {
+    const days = new Set<number>();
+
+    expenses.forEach((expense) => {
+      const dueDates = (expense.installments || [])
+        .map((installment) => installment.dueDate)
+        .filter((date): date is string => Boolean(date));
+
+      if (expense.dueDate && !dueDates.includes(expense.dueDate)) {
+        dueDates.push(expense.dueDate);
+      }
+
+      const relevantDates = currentMonthYear === 'todos'
+        ? dueDates
+        : dueDates.filter((date) => date.startsWith(currentMonthYear));
+
+      relevantDates.forEach((date) => {
+        const day = Number(date.slice(8, 10));
+        if (day >= 1 && day <= 31) days.add(day);
+      });
+
+      if (relevantDates.length === 0 && expense.dueDay >= 1 && expense.dueDay <= 31) {
+        if (currentMonthYear === 'todos' || expense.dueDate.startsWith(currentMonthYear)) {
+          days.add(expense.dueDay);
+        }
+      }
+    });
+
+    return Array.from(days).sort((a, b) => a - b);
+  }, [expenses, currentMonthYear]);
+
   // Filtragem e Ordenação da Lista de Despesas
   const filteredExpenses = useMemo(() => {
     return expenses
@@ -259,6 +292,25 @@ export default function App() {
           if (!hasInstallmentInMonth && !matchesPrimaryDue) {
             return false;
           }
+        }
+
+        // Filtro por dia de vencimento (inclui contas pagas e pendentes)
+        if (selectedDueDay !== null) {
+          const dueDates = (expense.installments || [])
+            .map((installment) => installment.dueDate)
+            .filter((date): date is string => Boolean(date));
+
+          if (expense.dueDate && !dueDates.includes(expense.dueDate)) {
+            dueDates.push(expense.dueDate);
+          }
+
+          const relevantDates = currentMonthYear === 'todos'
+            ? dueDates
+            : dueDates.filter((date) => date.startsWith(currentMonthYear));
+          const hasSelectedDay = relevantDates.some((date) => Number(date.slice(8, 10)) === selectedDueDay)
+            || (relevantDates.length === 0 && expense.dueDay === selectedDueDay);
+
+          if (!hasSelectedDay) return false;
         }
 
         // Filtro por Busca de Texto
@@ -314,7 +366,7 @@ export default function App() {
             return 0;
         }
       });
-  }, [expenses, currentMonthYear, filters]);
+  }, [expenses, currentMonthYear, filters, selectedDueDay]);
 
   // Ações de CRUD
   const handleSaveExpense = async (
@@ -487,6 +539,45 @@ export default function App() {
         onOpenBackup={() => setIsBackupOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}
       />
+
+      {/* Atalhos fixos dos dias de vencimento */}
+      {!isLoading && availableDueDays.length > 0 && (
+        <div className="sticky top-0 z-30 w-full border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <span className="shrink-0 text-[11px] sm:text-xs font-bold text-slate-600">
+                Contas vencendo dia:
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedDueDay(null)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition ${
+                  selectedDueDay === null
+                    ? 'bg-emerald-700 text-white border-emerald-700'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400 hover:text-emerald-800'
+                }`}
+              >
+                Todos
+              </button>
+              {availableDueDays.map((day) => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setSelectedDueDay((current) => current === day ? null : day)}
+                  aria-pressed={selectedDueDay === day}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border transition whitespace-nowrap ${
+                    selectedDueDay === day
+                      ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-100 hover:bg-emerald-100'
+                  }`}
+                >
+                  Contas vencendo dia {String(day).padStart(2, '0')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
