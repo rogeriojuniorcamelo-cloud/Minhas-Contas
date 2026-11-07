@@ -37,7 +37,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
             value={filters.search}
             onChange={(e) => onFilterChange({ search: e.target.value })}
             placeholder="Pesquisar conta por nome ou observação..."
-            className="w-full pl-10 pr-9 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+            className="w-full pl-10 pr-9 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition"
           />
           {filters.search && (
             <button
@@ -54,7 +54,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
             type="button"
             onClick={() => onViewModeChange('cards')}
             title="Visualização em Cartões"
-            className={`p-1.5 rounded-lg transition ${viewMode === 'cards' ? 'bg-white text-zinc-950 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`p-1.5 rounded-lg transition ${viewMode === 'cards' ? 'bg-white text-emerald-900 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'}`}
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
@@ -87,7 +87,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
                 type="button"
                 onClick={onOpenCategoryManager}
                 title="Gerenciar Categorias"
-                className="p-1.5 text-slate-500 hover:text-black hover:bg-slate-100 rounded-lg transition"
+                className="p-1.5 text-slate-500 hover:text-emerald-800 hover:bg-slate-100 rounded-lg transition"
               >
                 <Tag className="w-3.5 h-3.5" />
               </button>
