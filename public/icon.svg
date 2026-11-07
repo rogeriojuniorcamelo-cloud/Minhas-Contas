@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#065f46" />
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#022c22" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bg-grad)" />
+
+  <!-- Inner glowing circle ring -->
+  <circle cx="256" cy="256" r="210" stroke="#10b981" stroke-opacity="0.25" stroke-width="4" stroke-dasharray="8 8" />
+
+  <!-- Wallet Body -->
+  <g filter="url(#shadow)">
+    <!-- Back card layer -->
+    <rect x="144" y="140" width="224" height="130" rx="16" fill="#047857" stroke="#34d399" stroke-opacity="0.4" stroke-width="3" />
+    <circle cx="180" cy="170" r="14" fill="#a7f3d0" fill-opacity="0.3" />
+
+    <!-- Main Wallet Card / Holder -->
+    <rect x="112" y="176" width="288" height="196" rx="24" fill="#ffffff" />
+    <path d="M112 216 H400" stroke="#f1f5f9" stroke-width="3" />
+    
+    <!-- Emerald decorative stripe -->
+    <path d="M112 208 H400 V236 H112 Z" fill="#ecfdf5" />
+
+    <!-- Wallet Clasp / Flap -->
+    <path d="M300 244 H392 C405.255 244 416 254.745 416 268 C416 281.255 405.255 292 392 292 H300 C293.373 292 288 286.627 288 280 V256 C288 249.373 293.373 244 300 244 Z" fill="url(#accent-grad)" />
+    <!-- Clasp Button (Gold / Shiny Coin) -->
+    <circle cx="384" cy="268" r="12" fill="#fef08a" stroke="#ca8a04" stroke-width="2" />
+    <circle cx="384" cy="268" r="6" fill="#eab308" />
+
+    <!-- Currency Symbol R$ & Checkmark inside wallet -->
+    <text x="144" y="306" font-family="system-ui, -apple-system, sans-serif" font-size="34" font-weight="800" fill="#064e3b">R$</text>
+
+    <!-- Upward financial trend arrow / sprout in soft green -->
+    <path d="M144 340 L196 290 L226 312 L268 260" fill="none" stroke="#059669" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+    <polyline points="248,260 268,260 268,280" fill="none" stroke="#059669" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

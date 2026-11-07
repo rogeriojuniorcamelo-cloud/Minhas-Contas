@@ -1,0 +1,6 @@
+{
+  "name": "Minhas Contas",
+  "description": "Aplicativo de controle financeiro pessoal moderno para gestão de despesas mensais, parcelas, vencimentos e relatórios com armazenamento offline seguro via IndexedDB.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
