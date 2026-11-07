@@ -19,7 +19,6 @@ import {
   ExpenseFiltersState,
   FinancialSummaryData,
   CategoryInfo,
-  DEFAULT_CATEGORIES,
 } from './types/expense';
 import {
   getCurrentYearMonth,
@@ -42,7 +41,7 @@ import { Plus, Wallet, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [categories, setCategories] = useState<CategoryInfo[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMonthYear, setCurrentMonthYear] = useState<string>(getCurrentYearMonth());
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -86,11 +85,19 @@ export default function App() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      // Remove resquícios legados de dados demonstrativos e categorias de fábrica (Melhoria 3)
-      await cleanupLegacyDemoData();
+      // Limpeza e sincronização são auxiliares: uma falha nelas não pode impedir
+      // a abertura do painel nem a leitura das despesas já armazenadas.
+      try {
+        await cleanupLegacyDemoData();
+      } catch (cleanupError) {
+        console.error('Aviso: não foi possível concluir a limpeza de dados antigos:', cleanupError);
+      }
 
-      // Sincroniza e gera ocorrências futuras de despesas recorrentes sem duplicidade
-      await syncRecurringExpenses();
+      try {
+        await syncRecurringExpenses();
+      } catch (recurrenceError) {
+        console.error('Aviso: não foi possível sincronizar recorrências:', recurrenceError);
+      }
 
       const [loadedExpenses, loadedCategories] = await Promise.all([
         getAllExpenses(),
