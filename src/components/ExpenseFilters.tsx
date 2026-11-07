@@ -62,7 +62,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
             type="button"
             onClick={() => onViewModeChange('table')}
             title="Visualização em Tabela"
-            className={`p-1.5 rounded-lg transition ${viewMode === 'table' ? 'bg-white text-zinc-950 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`p-1.5 rounded-lg transition ${viewMode === 'table' ? 'bg-white text-emerald-900 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'}`}
           >
             <List className="w-4 h-4" />
           </button>
