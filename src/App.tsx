@@ -442,8 +442,8 @@ export default function App() {
       
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-950 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-emerald-700 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 bg-black text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-900 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <CheckCircle2 className="w-5 h-5 text-zinc-500 shrink-0" />
           <span className="text-xs sm:text-sm font-semibold">{toastMessage}</span>
         </div>
       )}
@@ -486,12 +486,12 @@ export default function App() {
         {/* Lista de Contas ou Mensagem de Vazio */}
         {isLoading ? (
           <div className="py-20 text-center text-slate-400">
-            <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-sm font-semibold">Carregando suas contas...</p>
           </div>
         ) : filteredExpenses.length === 0 ? (
           <div className="bg-white rounded-3xl p-10 sm:p-14 border border-slate-200 text-center max-w-lg mx-auto shadow-xs">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+            <div className="w-16 h-16 rounded-2xl bg-zinc-50 text-zinc-900 flex items-center justify-center mx-auto mb-4 border border-zinc-200">
               <Wallet className="w-8 h-8" />
             </div>
             <h3 className="text-base sm:text-lg font-bold text-slate-900">
@@ -508,7 +508,7 @@ export default function App() {
                 setEditingExpense(null);
                 setIsFormOpen(true);
               }}
-              className="inline-flex items-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition active:scale-95"
+              className="inline-flex items-center gap-2 bg-black hover:bg-zinc-950 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-md transition active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span>Cadastrar Nova Despesa</span>
@@ -575,7 +575,7 @@ export default function App() {
           setEditingExpense(null);
           setIsFormOpen(true);
         }}
-        className="fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white shadow-2xl flex items-center justify-center border-2 border-emerald-500 z-40 active:scale-95 transition"
+        className="fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full bg-zinc-900 hover:bg-black active:bg-zinc-950 text-white shadow-2xl flex items-center justify-center border-2 border-zinc-500 z-40 active:scale-95 transition"
         title="Nova Despesa"
       >
         <Plus className="w-7 h-7" />
@@ -584,8 +584,8 @@ export default function App() {
       {/* Rodapé */}
       <footer className="mt-auto border-t border-slate-200/80 bg-white py-5 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 font-bold text-emerald-950">
-            <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" />
+          <div className="flex items-center gap-1.5 font-bold text-black">
+            <span className="w-2 h-2 rounded-full bg-black inline-block" />
             <span>MINHAS CONTAS</span>
             <span className="text-slate-400 font-normal">• Controle Financeiro Pessoal</span>
           </div>
