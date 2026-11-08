@@ -527,22 +527,23 @@ export default function App() {
         </div>
       )}
 
-      {/* Cabeçalho */}
-      <Header
-        currentMonthYear={currentMonthYear}
-        onMonthChange={handleMonthChange}
-        onOpenNewExpense={() => {
-          setEditingExpense(null);
-          setIsFormOpen(true);
-        }}
-        onOpenCategories={() => setIsCategoriesOpen(true)}
-        onOpenBackup={() => setIsBackupOpen(true)}
-        onOpenGuide={() => setIsGuideOpen(true)}
-      />
+      {/* Cabeçalho e atalhos permanecem juntos no topo durante a rolagem */}
+      <div className="sticky top-0 z-40 w-full">
+        <Header
+          currentMonthYear={currentMonthYear}
+          onMonthChange={handleMonthChange}
+          onOpenNewExpense={() => {
+            setEditingExpense(null);
+            setIsFormOpen(true);
+          }}
+          onOpenCategories={() => setIsCategoriesOpen(true)}
+          onOpenBackup={() => setIsBackupOpen(true)}
+          onOpenGuide={() => setIsGuideOpen(true)}
+        />
 
-      {/* Atalhos fixos dos dias de vencimento */}
-      {!isLoading && availableDueDays.length > 0 && (
-        <div className="sticky top-0 z-30 w-full border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-sm">
+        {/* Atalhos fixos dos dias de vencimento */}
+        {!isLoading && availableDueDays.length > 0 && (
+          <div className="w-full border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
               <span className="shrink-0 text-[11px] sm:text-xs font-bold text-slate-600">
@@ -577,7 +578,8 @@ export default function App() {
             </div>
           </div>
         </div>
-      )}
+        )}
+      </div>
 
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
