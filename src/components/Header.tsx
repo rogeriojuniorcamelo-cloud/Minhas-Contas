@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-emerald-950 text-white shadow-md border-b border-emerald-800">
+    <header className="relative z-30 bg-emerald-950 text-white shadow-md border-b border-emerald-800">
       {/* Barra de Status Offline se desconectado */}
       {!isOnline && (
         <div className="bg-amber-600 text-white px-4 py-1.5 text-xs font-medium flex items-center justify-center gap-2">
